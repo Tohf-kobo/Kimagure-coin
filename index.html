@@ -272,15 +272,58 @@ body{max-width:none;padding:0}
 /* コイントス結果は通常のポップアップ説明より大きく強調する */
 #modalBackdrop .modal #modalInfo .toss-result-emphasis{display:block;font-size:clamp(1.65rem,5vw,2.5rem);font-weight:900;line-height:1.3;color:#174a8b;letter-spacing:.025em;margin:12px 0}
 #modalBackdrop .modal #modalInfo .toss-result-note{display:block;font-size:.9rem;font-weight:400;line-height:1.5;margin:7px 0}
+
+.reservation-effect-info{margin:12px 0 14px;padding:12px 14px;border:1px solid #c8d5e8;border-radius:12px;background:#f2f6fd;color:#233550;text-align:left;font-size:clamp(.85rem,2.4vw,.98rem);line-height:1.65}
+.reservation-effect-info>strong{display:block;margin-bottom:5px}
+.reservation-effect-row{display:flex;gap:5px;padding:3px 0}
+.reservation-effect-row>span:first-child{white-space:nowrap;font-weight:700}
+.modal #modalInfo{white-space:pre-line}.held-effect-item{display:flex;align-items:center;gap:6px;min-width:0;max-width:100%;padding:3px 5px;border:1px solid #dce3ed;border-radius:8px;background:#f8fafc}.held-effect-item .coin{flex:0 0 auto!important}.held-effect-text{font-size:.72rem;line-height:1.3;overflow-wrap:anywhere;color:#334155;min-width:0}#gameScreen .dash-center>.panel:not(.board-panel) .hand{flex-wrap:wrap;overflow:visible}#gameScreen .dash-center>.panel:not(.board-panel) .held-effect-item .coin{width:30px;height:30px;font-size:.7rem}@media(max-width:600px){.held-effect-text{font-size:.65rem}.held-effect-item{gap:4px}} </style><style id="replenish-overview-style">
+.replenish-overview{width:100%;text-align:left;margin-bottom:12px;padding:10px;border:1px solid #d9e0ea;border-radius:12px;background:#f8fafc}
+.replenish-overview h3{font-size:.95rem;margin:6px 0 8px;color:#263449}
+.replenish-hand-cards{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.replenish-card{display:inline-flex;align-items:center;justify-content:center;border:1px solid #a5b0c1;border-radius:8px;padding:8px 12px;font-size:.9rem;font-weight:700;background:#fff;color:#233044}
+.replenish-card.red{background:#f9d7d7}.replenish-card.blue{background:#d7e8fc}.replenish-card.yellow{background:#fff1b6}.replenish-card.green{background:#d9f2d9}.replenish-card.black{background:#30333d;color:white}.replenish-card.white{background:white}.replenish-card.random{background:#e5d9f5}
+.replenish-overview .reservation-stock-grid{margin-bottom:0}
 </style><style id="reservation-list-style">.reservation-list-wrap{overflow-x:auto;max-width:100%}.reservation-list{width:100%;border-collapse:collapse;font-size:.88rem;text-align:left}.reservation-list th,.reservation-list td{padding:7px 9px;border-bottom:1px solid #dce3ec}.reservation-list thead,.reservation-list tfoot{background:#f1f5f9}.reservation-color{display:inline-block;min-width:66px;text-align:center;padding:4px 8px;border-radius:7px;font-weight:700}.reservation-color.black{color:#fff}.reservation-color.white{border:1px solid #b7c1ce}@media(max-width:849px){.reservation-list{font-size:.77rem}.reservation-list th,.reservation-list td{padding:5px 6px}.reservation-color{min-width:48px;padding:3px 5px}}</style>
+<style id="mobile-reservation-preview-style">
+.reservation-confirm-content{display:block!important;width:100%}
+.reservation-stock-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 0 4px;width:100%}
+.reservation-stock-item{display:flex;align-items:center;gap:6px;padding:7px 8px;border:1px solid #d9e0ea;border-radius:9px;font-size:.83rem;background:#f8fafc}
+.reservation-stock-item strong{margin-left:auto;font-size:1.05rem;white-space:nowrap}
+.reservation-stock-item small{font-size:.68rem;color:#64748b}
+.reservation-stock-highlight{outline:2px solid #2863a6;background:#eaf3ff}
+.reservation-stock-dot{width:15px;height:15px;border-radius:50%;border:1px solid #9ba6b6;flex:none}
+.reservation-confirm-actions{display:flex;gap:10px;justify-content:stretch;margin-top:12px}
+.reservation-confirm-actions button{flex:1;min-height:44px;font-weight:750}
+@media(max-width:849px){
+ #modalBackdrop.reservation-confirm-dialog{background:#172335b8;pointer-events:auto;align-items:center;padding:12px}
+ #modalBackdrop.reservation-confirm-dialog .modal{width:min(390px,100%);max-height:calc(100dvh - 24px);overflow:auto;padding:14px}
+ #modalBackdrop.reservation-confirm-dialog #temporarilyHideModal{display:none}
+ #modalBackdrop.reservation-confirm-dialog #modalInfo{font-size:.86rem;line-height:1.4}
+}
+</style><style id="board-score-style">
+#gameScreen .board-score{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 11px;border-radius:9px;background:#f0f5fb;color:#263e60;font-size:.85rem;font-weight:700;flex-shrink:0}
+#gameScreen .board-score strong{font-size:1.16rem;font-variant-numeric:tabular-nums;color:#174a8b}
+#gameScreen .board-score-cpu{border-left:4px solid #74859a}
+#gameScreen .board-score-human{border-left:4px solid #2863a6}
+@media(max-width:849px){#gameScreen .board-score{padding:2px 7px;font-size:.68rem;min-height:21px}#gameScreen .board-score strong{font-size:.86rem}}
+@media(max-height:760px) and (min-width:850px){#gameScreen .board-score{padding:2px 8px;font-size:.75rem}#gameScreen .board-score strong{font-size:1rem}}
+</style><style id="score-center-v24">
+/* v2.4: Show provisional scores prominently in the centered blank spaces */
+#gameScreen .board-score{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;background:transparent;border:0;border-radius:0;padding:3px 8px;min-height:70px;text-align:center;flex-shrink:0}
+#gameScreen .board-score span{font-size:.78rem;font-weight:700;color:#52647d;line-height:1.25}
+#gameScreen .board-score strong{font-size:clamp(2rem,3.8vw,3rem);font-weight:900;line-height:1.15;color:#174a8b;font-variant-numeric:tabular-nums}
+@media(max-width:849px){#gameScreen .board-score{min-height:47px;padding:2px 4px}#gameScreen .board-score span{font-size:.65rem}#gameScreen .board-score strong{font-size:clamp(1.5rem,6vw,2.25rem)}}
+@media(max-height:760px) and (min-width:850px){#gameScreen .board-score{min-height:48px;padding:2px 4px}#gameScreen .board-score strong{font-size:2rem}}
+</style>
 </head><body>
 <noscript><div style="background:#fff0cb;color:#543800;padding:14px;text-align:center">この表示環境ではJavaScriptが無効です。iOSのファイルプレビューではなく、Safariで公開URLを開いてください。</div></noscript>
 <div id="startScreen" class="screen"><div class="screen-panel"><div style="font-size:3.5rem">🪙</div><h1>気まぐれコイン</h1><p>2人用テストプレイ<br>あなた vs CPU</p><div class="cpu-level-select"><strong>CPUの強さ</strong><label><input type="radio" name="cpuLevel" value="weak" checked> 弱CPU（ランダム）</label><label><input type="radio" name="cpuLevel" value="strong"> 強CPU（得点重視）</label></div><p class="muted" style="line-height:1.75">予約カードを使ってコインを争奪し、コイントスで出た目が得点になります。<br><strong style="color:#ffd76a;font-size:1.08em">ただし気まぐれなコインに文字通りコインをひっくり返されちゃうかも。</strong><br>勝負に勝てばオタカラをゲット、2個オタカラをゲットした方が勝利！</p><div class="start-actions"><button id="startGame" type="button" class="primary">ゲーム開始</button><button type="button" class="open-rules">ゲームルール</button><button type="button" id="shareStart" class="share-x">𝕏 で共有</button></div></div></div>
 <div id="endScreen" class="screen" hidden><div class="screen-panel"><div style="font-size:3.5rem">🏆</div><h1 id="endTitle">ゲーム終了</h1><p id="endMessage"></p><div class="result-grid"><div>あなた<strong id="endHumanTreasure">0個</strong><span id="endHumanScore"></span></div><div>CPU<strong id="endCpuTreasure">0個</strong><span id="endCpuScore"></span></div></div><p id="endMatchCount" class="muted"></p><table class="match-history" aria-label="各勝負の得点履歴"><caption>勝負ごとの得点結果</caption><thead><tr><th>勝負</th><th>あなた</th><th>CPU</th><th>オタカラ獲得</th></tr></thead><tbody id="endMatchHistory"></tbody></table><div class="survey-panel"><p><strong>テストプレイアンケートにご協力ください</strong></p><p class="muted">プレイした感想をお聞かせください。</p><a class="survey-link" href="https://forms.cloud.microsoft/r/zfr8TawkBV" target="_blank" rel="noopener noreferrer">アンケートに回答する ↗</a></div><div class="start-actions"><button id="backToStart" class="primary">最初の画面に戻る</button><button type="button" id="shareEnd" class="share-x">𝕏 に結果を共有</button></div></div></div>
 <div id="gameScreen" hidden>
 <header class="bar"><div><h1>🪙 気まぐれコイン — Section 6 コンパクト画面版</h1><p class="muted">予約 → コイントス → チップ判断 → 特殊効果 → オタカラ判定</p></div><div class="header-actions"><button type="button" class="open-rules">ゲームルール</button><button id="restart">新しいゲーム</button></div></header>
-<div class="dashboard-col dash-left"><section class="panel"><div class="bar"><div id="progress"></div><div id="stock"></div></div><p id="status" class="status"></p><div id="effectHelp"></div></section><section class="panel coin-reference-panel"><h2>コイン早見表・残数</h2><div id="stockSummary"></div><div class="effect" id="effects"></div><div id="inventory" class="inventory"></div><details class="debug-details"><summary>デバッグログ</summary><pre id="log"></pre></details></section><section class="panel"><h2>暫定スコア</h2><div id="scores" class="bar"></div><p class="muted">左端（第3ラウンド）のカード基礎得点+1を起点に、第3→第2→第1ラウンドの順に演算します。白・黒を取得した枠はカード得点+1を使います。</p></section></div>
-<div class="dashboard-col dash-center"><section class="panel"><h2>CPUの手元（白・黒コイン）</h2><div id="held-cpu" class="hand"></div></section><section class="panel board-panel"><h2>CPUの場</h2><div id="cpuBoard" class="board"></div><hr class="divider"><h2>あなたの場</h2><div id="humanBoard" class="board"></div></section><section class="panel"><h2>あなたの手元（白・黒コイン）</h2><div id="held-human" class="hand"></div></section></div>
+<div class="dashboard-col dash-left"><section class="panel"><div class="bar"><div id="progress"></div><div id="stock"></div></div><p id="status" class="status"></p><div id="effectHelp"></div></section><section class="panel coin-reference-panel"><h2>コイン早見表・残数</h2><div id="stockSummary"></div><div class="effect" id="effects"></div><div id="inventory" class="inventory"></div><details class="debug-details"><summary>デバッグログ</summary><pre id="log"></pre></details></section></div>
+<div class="dashboard-col dash-center"><section class="panel"><h2>CPUの手元（白・黒コイン）</h2><div id="held-cpu" class="hand"></div></section><section class="panel board-panel"><div class="board-score board-score-cpu"><span>CPUの暫定スコア</span><strong id="cpuScore">0点</strong></div><h2>CPUの場</h2><div id="cpuBoard" class="board"></div><hr class="divider"><h2>あなたの場</h2><div id="humanBoard" class="board"></div><div class="board-score board-score-human"><span>あなたの暫定スコア</span><strong id="humanScore">0点</strong></div></section><section class="panel"><h2>あなたの手元（白・黒コイン）</h2><div id="held-human" class="hand"></div></section></div>
 <div class="dashboard-col dash-right">
 <section class="panel player-info cpu-info"><h2>相手プレイヤー（CPU）</h2><div id="cpuInfo" class="player-info-top"></div><h3>相手の手札 <span id="cpuHandCount"></span></h3><div id="cpuHand" class="hand"></div></section>
 <section class="panel player-info human-info"><h2>あなた</h2><div id="humanInfo" class="player-info-top"></div><h3>あなたの手札 <span class="muted">（クリックして予約）</span></h3><div id="hand" class="hand"></div></section>
@@ -288,6 +331,7 @@ body{max-width:none;padding:0}
 <div id="specialGuide" role="status" aria-live="polite"><strong id="specialGuideTitle"></strong><p id="specialGuideText"></p><div class="step" id="specialGuideStep"></div><button type="button" id="temporarilyHideGuide" class="guide-hide-btn">一時非表示</button></div>
 <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modal"><button type="button" id="temporarilyHideModal" class="popup-hide-btn" title="盤面を確認するため一時非表示">一時非表示</button><h2 id="modalTitle"></h2><p id="modalInfo"></p><div id="modalContent" class="hand"></div><div id="modalAction"></div></div></div>
 </div>
+
 <button id="restorePopup" type="button" hidden>ポップアップを再表示</button>
 <div id="rulesOverlay" class="rules-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
  <div class="rules-dialog">
@@ -319,7 +363,7 @@ function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()
 function bag(o){return shuffle(Object.entries(o).flatMap(([k,n])=>Array(n).fill(k)))}
 function log(x){logs.push(x);const el=$("log");if(el){el.textContent=logs.slice(-120).join("\n");el.scrollTop=el.scrollHeight}}
 function score(p){let n=state.boards[p][2]?.card?CARD_BASE:0;for(let i=2;i>=0;i--){let s=state.boards[p][i];if(!s)continue;let f=s.coin?s.coin.face:s.special?`+${CARD_BASE}`:null;if(!f)continue;let op=f[0],v=Number(f.slice(1));if(op==="+")n+=v;else if(op==="−")n-=v;else if(op==="×")n*=v;else if(op==="÷")n/=v}return n}
-function modal(title,info,buttons,action){clearPeek();$("modalTitle").textContent=title;$("modalInfo").textContent=info||"";
+function modal(title,info,buttons,action){clearPeek();$("modalBackdrop").classList.remove("reservation-confirm-dialog");$("modalContent").classList.remove("reservation-confirm-content");$("modalTitle").textContent=title;$("modalInfo").textContent=info||"";
  if(title==="コイントス結果"||title==="CPUのコイントス結果"){
   const match=(info||"").match(/^(.+?コイン)：(.+?)。(.*)$/s);
   if(match){
@@ -339,7 +383,7 @@ function showSpecialGuide(){
  $("specialGuideStep").textContent=t.first?"操作：青枠のコインから2個目をクリックしてください":"操作：青枠のコインを直接クリックしてください";
  $("specialGuide").classList.add("active");
 }
-function closeModal(){clearPeek();$("modalBackdrop").classList.remove("active","hand-prompt");$("modalContent").replaceChildren();$("modalAction").replaceChildren()}
+function closeModal(){clearPeek();$("modalBackdrop").classList.remove("active","hand-prompt","reservation-confirm-dialog");$("modalContent").classList.remove("reservation-confirm-content");$("modalContent").replaceChildren();$("modalAction").replaceChildren()}
 function showScreen(name){clearPeek();for(let id of ["startScreen","gameScreen","endScreen"])$(id).hidden=(id!==name);window.scrollTo(0,0)}
 function shareToX(isResult){
  let message;
@@ -395,15 +439,46 @@ function render(){
  }
  $("cpuHand").innerHTML=state.hands.cpu.map(()=>'<span class="card-back" title="内容は非公開">🪙</span>').join("");
  $("cpuHandCount").textContent=`（${state.hands.cpu.length}枚）`;
-for(let p of ["human","cpu"]){$(p+"Board").innerHTML=`<div class="position-labels"><span>左側</span><span>真ん中</span><span>右側</span></div>`+[0,1,2].map(i=>slotHTML(p,i)).join("");$("held-"+p).innerHTML=state.held[p].map(c=>`<span class="coin ${c.color}" title="${colors[c.color]}">${c.face}</span>`).join("")||'<span class="muted">なし</span>'}
+for(let p of ["human","cpu"]){$(p+"Board").innerHTML=`<div class="position-labels"><span>左側</span><span>真ん中</span><span>右側</span></div>`+[0,1,2].map(i=>slotHTML(p,i)).join("");$("held-"+p).innerHTML=state.held[p].map(c=>`<div class="held-effect-item" title="${colors[c.color]}コイン：${c.side===0?"表":"裏"}／${specialTossEffect(c.color,c.side)}"><span class="coin ${c.color}">${c.side===0?"表":"裏"}</span><span class="held-effect-text">${specialTossEffect(c.color,c.side)}</span></div>`).join("")||'<span class="muted">なし</span>'}
 document.querySelectorAll(".target").forEach(el=>el.onclick=()=>clickTarget(el.dataset.p,Number(el.dataset.i)));
-$("scores").textContent=`あなた：${score("human")}点　｜　CPU：${score("cpu")}点`;
+$("humanScore").textContent=`${score("human")}点`;$("cpuScore").textContent=`${score("cpu")}点`;
 $("progress").textContent=`配置位置：${positionName(Math.min(state.round,2))}　｜　先手：${player(state.lead)}`;$("stock").textContent=`未使用コイン：${state.coins.length} / 24個`;
 $("stockSummary").textContent=`未使用コイン ${state.coins.length} / 24個　｜　未使用予約カード ${state.deck.length}枚`;
 $("effects").innerHTML=Object.entries(faces).map(([k,v])=>`<div class="effect-color ${k}"><div class="effect-heading"><strong>${colors[k]}コイン</strong><span class="effect-count">残り ${state.coins.filter(c=>c===k).length} / ${coinCounts[k]}</span></div><div class="effect-values">${v.join(" ／ ")}</div>${k==="black"?"<small>表：場の1個を反転<br>裏：袋から交換して再トス</small>":k==="white"?"<small>表：同じ場の2個のコイン位置を交換<br>裏：自分と相手で交換</small>":""}</div>`).join("");
-$("hand").replaceChildren();state.hands.human.forEach((c,i)=>{let b=document.createElement("button");b.className=c;b.textContent=colors[c]+"予約";b.disabled=state.phase!=="place"||state.cards.human!==undefined;b.onclick=()=>{if(state.phase==="place"){closeModal();place("human",i)}};$("hand").append(b)});
+$("hand").replaceChildren();state.hands.human.forEach((c,i)=>{let b=document.createElement("button");b.className=c;b.textContent=colors[c]+"予約";b.disabled=state.phase!=="place"||state.cards.human!==undefined;b.onclick=()=>{if(state.phase==="place"){reservationChoice(i)}};$("hand").append(b)});
 $("status").textContent=state.phase==="done"?"3配置完了":state.phase==="effect"?"盤面のコインを直接クリックしてください":state.phase==="place"?"予約カードを選択してください":state.phase==="replenish"?"手札を補充しています":"コイン処理中";
 if(state.phase==="effect"){$("effectHelp").replaceChildren();showSpecialGuide()}else{hideSpecialGuide();if(state.phase!=="review")$("effectHelp").replaceChildren()}}
+function reservationChoice(index){
+ if(!state||state.phase!=="place"||state.cards.human!==undefined)return;
+ const card=state.hands.human[index];if(!card)return;
+ const count=state.coins.filter(c=>c===card).length;
+ const isRandom=card==="random";
+ const info=isRandom?"ランダム予約：袋から引く候補2個から1個を選びます。":count>0?`${colors[card]}コインを予約します。現在の残りは${count}個です。`:`${colors[card]}コインは残っていません。候補2個から1個を選びます。`;
+ modal(`${colors[card]}予約カード`,info,[],null);
+ const content=$("modalContent");content.classList.add("reservation-confirm-content");
+ const stock=document.createElement("div");stock.className="reservation-stock-grid";
+ stock.innerHTML=Object.entries(coinCounts).map(([color,total])=>`<div class="reservation-stock-item ${color===card?"reservation-stock-highlight":""}"><span class="reservation-stock-dot ${color}"></span><span>${colors[color]}</span><strong>${state.coins.filter(c=>c===color).length}<small> / ${total}</small></strong></div>`).join("");
+ content.append(stock);
+ // 予約カードの説明文の直下に、取得するコインの表裏効果を表示する。
+ // ランダム予約は色が未確定のため、全色の効果を一覧表示する。
+ const effectColors=isRandom?Object.keys(coinCounts):[card];
+ const effectBox=document.createElement("div");effectBox.className="reservation-effect-info";
+ const effectText=color=>{
+  const pair=faces[color];
+  if(!pair)return "";
+  if(color==="black")return "表：場の通常コイン1個を反転 ／ 裏：場の通常コイン1個を袋のコインと交換して再トス";
+  if(color==="white")return "表：同じ場の2個のコイン位置を交換（+1コインも対象） ／ 裏：自分と相手の通常コインを1個ずつ交換";
+  return `表：${pair[0]} ／ 裏：${pair[1]}`;
+ };
+ effectBox.innerHTML=`<strong>${isRandom?"取得候補のコイン効果":"コイン効果"}</strong>`+effectColors.map(color=>`<div class="reservation-effect-row"><span>${colors[color]}：</span><span>${effectText(color)}</span></div>`).join("");
+ // 表示順：予約説明 → 効果 → 残コイン数 → 操作ボタン
+ content.insertBefore(effectBox,stock);
+ const actions=document.createElement("div");actions.className="reservation-confirm-actions";
+ const cancel=document.createElement("button");cancel.type="button";cancel.textContent="キャンセル";cancel.onclick=()=>{content.classList.remove("reservation-confirm-content");closeModal();};
+ const confirm=document.createElement("button");confirm.type="button";confirm.className="primary";confirm.textContent="選択";confirm.onclick=()=>{content.classList.remove("reservation-confirm-content");closeModal();place("human",index)};
+ actions.append(cancel,confirm);$("modalAction").append(actions);
+ $("modalBackdrop").classList.add("reservation-confirm-dialog");
+}
 function openReservation(){if(state.phase!=="place"||state.cards.human!==undefined)return;modal("予約カードを選択してください","画面下の『あなたの手札』からカードをクリックしてください。",[]);$("modalBackdrop").classList.add("hand-prompt")}
 function cpuNotice(title,info,after){modal(title,info,[],{label:"次へ",fn:()=>{closeModal();after()}})}
 function place(p,i){if(state.phase!=="place"||state.cards[p]!==undefined)return;let c=state.hands[p].splice(i,1)[0];state.cards[p]=c;state.boards[p][state.round]={card:c,coin:null,special:null};log(`${positionName(state.round)} ${player(p)}：${colors[c]}予約`);render();
@@ -489,7 +564,17 @@ function cpuEffectTargets(mode,allowed,owner){
  return pairs;
 }
 function advance(){if(state.phase!=="place")return;let a=state.lead,b=other(a);if(state.cards[a]===undefined){if(a==="cpu")place("cpu",cpuCardChoice());else openReservation();return}if(state.cards[b]===undefined){if(b==="cpu")place("cpu",cpuCardChoice());else openReservation();return}state.phase="coins";state.queue=[b,a];state.lastSecond=b;log(`取得順：${player(b)} → ${player(a)}`);nextCoin()}
-function nextCoin(){if(!state.queue.length){finishRound();return}let p=state.queue.shift(),card=state.cards[p];state.pending={player:p};let i=state.coins.indexOf(card);if(i>=0){let c=state.coins.splice(i,1)[0];log(`${player(p)}：${colors[c]}コイン取得`);beginToss(p,c);return}let candidates=[];for(let j=0;j<2&&state.coins.length;j++)candidates.push(state.coins.splice(Math.floor(Math.random()*state.coins.length),1)[0]);if(!candidates.length){log("袋が空です");finishRound();return}state.pending.candidates=candidates;let isRandomCard=card==="random";let reason=isRandomCard?"ランダム予約カードの効果で、袋から引いた候補2個のうち1個を選びます。":`予約した${colors[card]}コインが袋にないため、候補2個のうち1個を選びます。`;log(`${player(p)}：${isRandomCard?"ランダム予約":"予約色の在庫なし"}。候補 ${candidates.map(c=>colors[c]).join("・")}`);if(p==="cpu"){let ix=cpuCoinChoice(candidates);cpuNotice("CPUのコイン選択",`${reason} 候補：${candidates.map(c=>colors[c]).join("・")}。選択：${colors[candidates[ix]]}コイン`,()=>chooseCoin(ix))}else{state.phase="choose";modal("コインを選択",reason,candidates.map((c,i)=>({label:colors[c]+"コイン",color:c,fn:()=>chooseCoin(i)})));render()}}
+function coinEffectDescription(color){
+ if(color==="black")return "表：場の通常コイン1個を反転 ／ 裏：場の通常コイン1個を袋のランダムなコインと交換し、再トス";
+ if(color==="white")return "表：同じ場の2個のコイン位置を交換（+1コインも対象） ／ 裏：自分と相手の通常コインを1個ずつ交換";
+ return `表：${faces[color][0]} ／ 裏：${faces[color][1]}`;
+}
+function specialTossEffect(color,side){
+ if(color==="black")return side===0?"場の通常コイン1個を反転":"場の通常コイン1個を袋のランダムなコインと交換し、再トス";
+ if(color==="white")return side===0?"同じ場の2個のコイン位置を交換（+1コインも対象）":"自分と相手の通常コインを1個ずつ交換";
+ return "";
+}
+function nextCoin(){if(!state.queue.length){finishRound();return}let p=state.queue.shift(),card=state.cards[p];state.pending={player:p};let i=state.coins.indexOf(card);if(i>=0){let c=state.coins.splice(i,1)[0];log(`${player(p)}：${colors[c]}コイン取得`);beginToss(p,c);return}let candidates=[];for(let j=0;j<2&&state.coins.length;j++)candidates.push(state.coins.splice(Math.floor(Math.random()*state.coins.length),1)[0]);if(!candidates.length){log("袋が空です");finishRound();return}state.pending.candidates=candidates;let isRandomCard=card==="random";let reason=isRandomCard?"ランダム予約カードの効果で、袋から引いた候補2個のうち1個を選びます。":`予約した${colors[card]}コインが袋にないため、候補2個のうち1個を選びます。`;log(`${player(p)}：${isRandomCard?"ランダム予約":"予約色の在庫なし"}。候補 ${candidates.map(c=>colors[c]).join("・")}`);if(p==="cpu"){let ix=cpuCoinChoice(candidates);cpuNotice("CPUのコイン選択",`${reason} 候補：${candidates.map(c=>colors[c]+"コイン（"+coinEffectDescription(c)+"）").join(" ／ ")}。選択：${colors[candidates[ix]]}コイン`,()=>chooseCoin(ix))}else{state.phase="choose";modal("コインを選択",reason,candidates.map((c,i)=>({label:colors[c]+"コイン｜"+coinEffectDescription(c),color:c,fn:()=>chooseCoin(i)})));render()}}
 function chooseCoin(i){let q=state.pending,c=q?.candidates?.[i];if(!c)return;q.candidates.forEach((x,j)=>{if(i!==j)state.coins.push(x)});closeModal();state.phase="coins";log(`${player(q.player)}：${colors[c]}選択（未選択は袋に戻す）`);beginToss(q.player,c)}
 function beginToss(p,c){state.phase="toss";if(p==="human"){modal("コイントス",`${colors[c]}コインを取得しました。ボタンを押すと表裏をランダムに決定します。`,[],{label:"コインをトス！",fn:()=>{closeModal();completeToss(p,c)}});render()}else completeToss(p,c)}
 function completeToss(p,c){
@@ -501,7 +586,7 @@ function completeToss(p,c){
  }else slot.coin=coin;
  state.pending=null;log(`${player(p)}：${colors[c]}トス → ${coin.face}`);render();
  let next=()=>{state.phase="coins";render();nextCoin()};
- let msg=`${colors[c]}コイン：${coin.face}。${c==="black"||c==="white"?"特殊効果は全6枚の取得後に処理します。":""}`;
+ let msg=`${colors[c]}コイン：${coin.face}。${c==="black"||c==="white"?`今回の効果：${specialTossEffect(c,coin.side)}。特殊効果は全6枚の取得後に処理します。`:""}`;
  if(p==="human")modal("コイントス結果",msg,[],{label:"確定して進む",fn:()=>{closeModal();offerChip(p,coin,next)}});
  else cpuNotice("CPUのコイントス結果",msg,()=>offerChip(p,coin,next));
 }
@@ -545,14 +630,17 @@ function offerChip(p,coin,done){
  const chipInfo=normal
   ? `取得した${colors[coin.color]}コイン（${coin.face}）に対して、今だけ使用できます。チップはこのゲームで1回です。`
   : `取得した${colors[coin.color]}コイン（${coin.face}）は振り直しのみ可能です。チップはこのゲームで1回です。`;
- modal("特殊チップを使いますか？",chipInfo,chipButtons);
+ modal("特殊チップを使いますか？",chipInfo+`
+現在の出た目：${coin.side===0?"表":"裏"}（${coin.face}）
+表の効果：${coin.color==="black"||coin.color==="white"?specialTossEffect(coin.color,0):faces[coin.color][0]}
+裏の効果：${coin.color==="black"||coin.color==="white"?specialTossEffect(coin.color,1):faces[coin.color][1]}`,chipButtons);
 }
 function slots(p,includeDummy=false){return state.boards[p].map((s,i)=>({p,i,s})).filter(x=>x.s?.coin&&(includeDummy||!x.s.coin.dummy))}
-function canSwapTarget(x,owner){return x.p===owner||!x.s.coin?.protected}
+function canSwapTarget(x,owner){return !x.s.coin?.protected}
 function same(a,b){return a.p===b.p&&a.i===b.i}
 function swap(a,b){let t=a.s.coin;a.s.coin=b.s.coin;b.s.coin=t;log(`交換：${player(a.p)} ${positionName(a.i)} ↔ ${player(b.p)} ${positionName(b.i)}`)}
 function clickTarget(p,i){let t=state.target;if(state.phase!=="effect"||!t)return;let x=t.allowed.find(x=>x.p===p&&x.i===i);if(!x)return;if(!t.first){if(t.mode==="flip"||t.mode==="replace"){state.target=null;state.phase="coins";t.apply(x);render();if(t.mode==="flip")t.done();return}t.first=x;t.allowed=t.mode==="ownswap"?slots(p,true).filter(y=>!same(x,y)&&canSwapTarget(y,t.owner)):slots(other(p)).filter(y=>!y.s.coin.protected);t.message=`1個目：${player(p)} ${positionName(i)}。交換する2個目をクリックしてください。`;render();return}let first=t.first;state.target=null;state.phase="coins";swap(first,x);render();t.done()}
-function resolveSpecial(p,coin,done,depth=0){if(!["black","white"].includes(coin.color)||depth>8){done();return}let all=[...slots("human"),...slots("cpu")].filter(x=>x.p===p||!x.s.coin.protected),own=slots(p),mode="",allowed=[],message="",apply=null;
+function resolveSpecial(p,coin,done,depth=0){if(!["black","white"].includes(coin.color)||depth>8){done();return}let all=[...slots("human"),...slots("cpu")].filter(x=>!x.s.coin.protected),own=slots(p).filter(x=>!x.s.coin.protected),mode="",allowed=[],message="",apply=null;
 if(coin.color==="black"&&coin.side===0){mode="flip";allowed=all;message="黒・表：裏返すコインを直接クリックしてください。";apply=x=>{let c=x.s.coin;c.side=1-c.side;c.face=faces[c.color][c.side];log(`黒・表：${player(x.p)} ${positionName(x.i)} → ${c.face}`)}}
 else if(coin.color==="black"){mode="replace";allowed=state.coins.length?all:[];message="黒・裏：袋のコインと交換するコインをクリックしてください。";apply=x=>{
  const old=x.s.coin.color;
@@ -568,7 +656,7 @@ else if(coin.color==="black"){mode="replace";allowed=state.coins.length?all:[];m
   }else{x.s.coin=next;x.s.special=null}
   log(`黒・裏：${target} ${colors[old]} → ${colors[newColor]}（${next.face}）`);
   render();
-  modal("黒・裏：コイントス結果",`${target}：${colors[old]}コインを${colors[newColor]}コインに交換しました。\nコイントス結果：${next.face}。\n盤面を確認して「次へ」を押してください。`,[],{label:"次へ",fn:()=>{closeModal();done()}});
+  modal("黒・裏：コイントス結果",`${target}：${colors[old]}コインを${colors[newColor]}コインに交換しました。\nコイントス結果：${next.face}。${newColor==="black"||newColor==="white"?`\n今回の効果：${specialTossEffect(newColor,side)}。`:""}\n盤面を確認して「次へ」を押してください。`,[],{label:"次へ",fn:()=>{closeModal();done()}});
  };
  modal("黒・裏：交換コインのトス",`${target}の${colors[old]}コインを袋から引いた${colors[newColor]}コインに交換します。\n「コイントス」を押して表裏を決定してください。`,[],{label:"コイントス",fn:toss});
 }}
@@ -704,6 +792,20 @@ function nextMatch(){
  if(state.deck.length>=5)choices.push({label:"残り2枚を捨てて5枚引く",fn:()=>replenishHuman(true)});
  if(!choices.length){insufficientDeck();return}
  modal("次の勝負：手札補充","残っている手札2枚をそのまま残して3枚引くか、2枚を捨てて5枚引くか選んでください。",choices);
+ replenishOverview();
+}
+function replenishOverview(){
+ const hand=state.hands.human;
+ const wrapper=document.createElement("section");wrapper.className="replenish-overview";
+ const heading=document.createElement("h3");heading.textContent=`残りの手札（${hand.length}枚）`;wrapper.append(heading);
+ const cards=document.createElement("div");cards.className="replenish-hand-cards";
+ hand.forEach(color=>{const card=document.createElement("span");card.className=`replenish-card ${color}`;card.textContent=`${colors[color]}予約`;cards.append(card)});
+ if(!hand.length){const empty=document.createElement("span");empty.textContent="なし";cards.append(empty)}
+ wrapper.append(cards);
+ const coinHeading=document.createElement("h3");coinHeading.textContent=`残コイン数（合計 ${state.coins.length}個）`;wrapper.append(coinHeading);
+ const stock=document.createElement("div");stock.className="reservation-stock-grid";
+ stock.innerHTML=Object.entries(coinCounts).map(([color,total])=>`<div class="reservation-stock-item"><span class="reservation-stock-dot ${color}"></span><span>${colors[color]}</span><strong>${state.coins.filter(c=>c===color).length}<small> / ${total}</small></strong></div>`).join("");
+ wrapper.append(stock);$("modalContent").prepend(wrapper);
 }
 function replenishHuman(discard){
  if(discard){
