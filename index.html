@@ -1,0 +1,731 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>気まぐれコイン | CPU対戦</title>
+<style>
+:root{font-family:system-ui,sans-serif;color:#253041;background:#f4f6fa}*{box-sizing:border-box}body{max-width:1150px;margin:auto;padding:18px}h1{font-size:1.5rem;margin:0 0 8px}h2{font-size:1.05rem;margin:8px 0}p{margin:7px 0}.panel{background:white;border:1px solid #d9e0ea;border-radius:13px;padding:14px;margin:12px 0}.bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}button{font:inherit;cursor:pointer;border:1px solid #bac4d3;border-radius:9px;padding:8px 12px;background:#fff}button:disabled{opacity:.35;cursor:not-allowed}.primary{background:#244a85;color:white;border-color:#244a85}.board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.slot{border:1px dashed #b9c5d3;border-radius:12px;background:#f8fafc;min-height:185px;text-align:center;padding:10px}.slot small{color:#64748b}.card,.coin{margin:7px auto;border-radius:9px;display:grid;place-items:center;font-weight:750}.card{height:63px;max-width:170px;border:2px solid rgba(0,0,0,.13)}.coin{width:65px;height:65px;border-radius:50%;border:3px solid rgba(0,0,0,.18);box-shadow:inset 0 2px 5px #ffffff88}.empty{color:#94a3b8;font-size:.87rem;margin:20px 0}.hand{display:flex;gap:8px;flex-wrap:wrap}.hand button{min-width:92px;height:66px;font-weight:700;border-width:2px}.hand button:focus-visible{outline:3px solid #2563eb}.muted{color:#64748b}.status{font-weight:700;color:#174a8b}.effect{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:7px}.effect div{padding:9px;border-radius:9px;background:#f1f5f9;font-size:.9rem}pre{background:#172335;color:#e2e8f0;padding:12px;border-radius:9px;max-height:260px;overflow:auto;white-space:pre-wrap;font-size:.78rem}.red{background:#fbd2d2;color:#8c1821}.blue{background:#d5e7ff;color:#174b92}.yellow{background:#fff0a6;color:#775600}.green{background:#d5f4d5;color:#23632c}.black{background:#30333d;color:white}.white{background:#fff;color:#30333d;border-color:#8c96a4}.random{background:#e8d6ff;color:#6a3395}.gold{background:#f7d36c;color:#765300}.brown{background:#c78e64;color:#fff}.divider{border:0;border-top:1px solid #e2e8f0;margin:14px 0}@media(max-width:600px){body{padding:9px}.panel{padding:10px}.board{gap:5px}.slot{padding:5px;min-height:160px}.card{height:55px;font-size:.83rem}.coin{width:53px;height:53px;font-size:.85rem}.hand button{min-width:75px;height:55px}}
+
+.modal-backdrop{position:fixed;inset:0;background:#172235b8;display:none;align-items:center;justify-content:center;z-index:20;padding:15px}
+.modal-backdrop.active{display:flex}.modal{width:min(510px,100%);max-height:90vh;overflow:auto;background:white;border-radius:18px;padding:22px;box-shadow:0 20px 70px #0005;text-align:center}
+.modal h2{font-size:1.25rem}.modal .hand{justify-content:center;margin:20px 0}.modal .hand button{min-width:105px}
+.modal .coin{width:95px;height:95px;font-size:1.35rem}.modal .primary{min-width:140px}
+.target{cursor:pointer!important;outline:3px solid #2877db;outline-offset:2px;transition:transform .15s}.target:hover{transform:scale(1.08)}
+.selected-target{outline:4px solid #f59e0b!important}.board .slot{position:relative}
+#effectHelp{font-weight:700;color:#205a9d}
+
+/* 重ね合わせカード盤面：右→中央→左の順でカードを半分重ねる */
+.board{display:block;position:relative;width:100%;height:260px;max-width:780px;margin:12px auto 8px;overflow:visible}
+.board .position-labels{position:absolute;top:0;left:0;right:0;height:25px;display:flex;justify-content:space-around;font-weight:700;color:#50627a;font-size:.85rem}
+.board .slot{position:absolute;top:29px;width:46%;height:225px;min-height:0;border:0;background:transparent;padding:0;text-align:left;overflow:visible}
+.board .slot.pos-0{left:54%}.board .slot.pos-1{left:27%}.board .slot.pos-2{left:0%}
+.board .slot.pos-0 .card{z-index:1}.board .slot.pos-1 .card{z-index:2}.board .slot.pos-2 .card{z-index:3}
+.board .card{position:absolute;inset:0;margin:0;max-width:none;height:100%;width:100%;border:1.5px solid #183d63;border-radius:16px;background:#5e9dd0;color:#07111c;display:block;overflow:hidden;box-shadow:0 2px 4px #132d4830}
+.board .card .card-left{position:absolute;left:0;top:0;bottom:0;width:50%;border-right:1px solid #183d63;display:flex;align-items:center;justify-content:center;font-size:clamp(1.2rem,4vw,3.2rem);font-weight:900}
+.board .card .card-half{position:absolute;left:75%;top:50%;transform:translate(-50%,-50%);width:50%;aspect-ratio:1;border-radius:50%;background:white;color:#111!important;border:2px solid #1c2735;display:flex;align-items:center;justify-content:center;font-size:clamp(.85rem,2.3vw,1.8rem);font-weight:800}
+.board .card .card-name{position:absolute;top:8px;right:8px;font-size:.68rem;color:#163d5d}
+.board .card.red{background:#e78c8c}.board .card.blue{background:#5e9dd0}.board .card.yellow{background:#f2d36b}.board .card.green{background:#86c48a}.board .card.black{background:#4e5360;color:white}.board .card.white{background:#f2f3f5}.board .card.random{background:#b69add}
+.board .card.black .card-left{color:white}.board .card.black .card-half{color:#111!important}
+.board .coin{position:absolute;left:75%;top:50%;transform:translate(-50%,-50%);width:50%;height:auto;aspect-ratio:1;margin:0;border-radius:50%;font-size:clamp(.8rem,2vw,1.5rem);z-index:20;display:grid;place-items:center}
+.board .coin.target:hover{transform:translate(-50%,-50%) scale(1.1)}
+.board .slot .slot-note{position:absolute;bottom:8px;right:5px;left:52%;font-size:.67rem;line-height:1.25;text-align:center;background:#ffffffdd;border-radius:5px;padding:3px}
+.board .slot .slot-empty{height:100%;border:2px dashed #b9c5d3;border-radius:16px;background:#f8fafc9e;display:flex;align-items:center;justify-content:center;color:#8a9ab0;font-size:.85rem}
+@media(max-width:600px){.board{height:195px}.board .slot{top:26px;height:165px}.board .card{border-radius:10px}.board .card .card-left{font-size:1.45rem}.board .card .card-half{font-size:.95rem}.board .card .card-name{font-size:.55rem;top:4px;right:4px}.board .slot .slot-note{font-size:.54rem;bottom:3px}}
+
+/* Opaque coin faces and reliable stacking above all cards */
+.board .slot{isolation:auto}
+.board .coin{z-index:100!important;opacity:1!important;background-image:none!important;backdrop-filter:none!important;box-shadow:0 2px 5px #0005!important}
+.board .coin.red{background:#e85a60!important;color:#fff}.board .coin.blue{background:#377fd5!important;color:#fff}
+.board .coin.yellow{background:#f7cf3b!important;color:#28220b}.board .coin.green{background:#3fa45a!important;color:#fff}
+.board .coin.gold{background:#e6ac20!important;color:#241b06}.board .coin.brown{background:#a76a40!important;color:#fff}
+.board .coin.black{background:#252830!important;color:#fff}.board .coin.white{background:#fff!important;color:#111}
+.board .slot.pos-0{z-index:1}.board .slot.pos-1{z-index:2}.board .slot.pos-2{z-index:3}
+.board .slot.pos-0:has(.coin){z-index:1}.board .slot.pos-1:has(.coin){z-index:2}.board .slot.pos-2:has(.coin){z-index:3}
+.board .slot.pos-0:has(.coin.target){z-index:1}.board .slot.pos-1:has(.coin.target){z-index:2}.board .slot.pos-2:has(.coin.target){z-index:3}
+#modalBackdrop.hand-prompt{background:transparent;pointer-events:none;align-items:flex-start;padding-top:7vh}
+#modalBackdrop.hand-prompt .modal{pointer-events:none;width:min(480px,95%);padding:12px 20px;border:2px solid #2760aa;box-shadow:0 4px 18px #0003}
+#modalBackdrop.hand-prompt .modal h2{margin:3px;font-size:1.1rem}
+#modalBackdrop.hand-prompt .modal p{margin:3px}
+#hand button:not(:disabled){cursor:pointer;outline:2px solid #377fd5}
+
+#specialGuide{display:none;position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:30;width:min(540px,calc(100vw - 24px));padding:14px 18px;border:2px solid #2877db;border-radius:14px;background:#fff;box-shadow:0 7px 25px #0004;text-align:center;pointer-events:none}
+#specialGuide.active{display:block}#specialGuide strong{display:block;color:#174a8b;margin-bottom:5px}#specialGuide p{margin:0;font-size:.95rem}#specialGuide .step{color:#64748b;font-size:.83rem;margin-top:6px}
+
+.screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:22px}
+.screen[hidden],#gameScreen[hidden]{display:none!important}
+.screen-panel{width:min(560px,100%);background:white;border:1px solid #d9e0ea;border-radius:22px;padding:40px 26px;text-align:center;box-shadow:0 15px 50px #17233518}
+.screen-panel h1{font-size:2rem;margin:10px 0}.screen-panel p{line-height:1.7}
+.screen-panel .primary{font-size:1.1rem;padding:13px 28px;margin-top:15px}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:24px 0}
+.result-grid>div{border-radius:12px;background:#f1f5f9;padding:16px}
+.result-grid strong{display:block;font-size:1.7rem;margin:8px 0}
+.effect .effect-color{border:2px solid rgba(0,0,0,.12);background:var(--bg,#f1f5f9);color:var(--fg,#263041)}
+.effect-color.red,.inventory-chip.red{--bg:#fbd2d2;--fg:#8c1821}
+.effect-color.blue,.inventory-chip.blue{--bg:#d5e7ff;--fg:#174b92}
+.effect-color.yellow,.inventory-chip.yellow{--bg:#fff0a6;--fg:#775600}
+.effect-color.green,.inventory-chip.green{--bg:#d5f4d5;--fg:#23632c}
+.effect-color.black,.inventory-chip.black{--bg:#30333d;--fg:white}
+.effect-color.white,.inventory-chip.white{--bg:#fff;--fg:#30333d}
+.effect-color.gold,.inventory-chip.gold{--bg:#f7d36c;--fg:#765300}
+.effect-color.brown,.inventory-chip.brown{--bg:#c78e64;--fg:white}
+.inventory-grid{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}.inventory-chip{display:inline-block;border:1px solid #8a94a5;border-radius:8px;background:var(--bg);color:var(--fg);padding:6px 10px;font-weight:700}
+
+/* Section 6: one-viewport desktop dashboard; no page scrolling */
+html,body{margin:0;min-height:100%;width:100%}
+body{max-width:none;padding:0}
+#gameScreen:not([hidden]){display:grid;grid-template-columns:minmax(230px,1fr) minmax(390px,2.15fr) minmax(255px,1.12fr);grid-template-rows:auto minmax(0,1fr);grid-template-areas:"header header header" "left center right";gap:8px;height:100vh;min-height:0;padding:9px 12px;overflow:hidden}
+#gameScreen>header{grid-area:header;min-height:35px;padding:0 5px}
+#gameScreen>header h1{font-size:1.1rem;margin:0}
+#gameScreen>header p{display:none}
+#gameScreen .panel{margin:0;padding:8px 10px;border-radius:10px;min-height:0}
+#gameScreen .panel h2{font-size:.88rem;margin:0 0 5px}
+#gameScreen .panel p{font-size:.74rem;line-height:1.25;margin:3px 0}
+#gameScreen .bar{gap:4px}
+#gameScreen button{padding:5px 8px;font-size:.82rem}
+#gameScreen .dashboard-col{min-height:0;display:flex;flex-direction:column;gap:7px;overflow:hidden}
+#gameScreen .dash-left{grid-area:left}
+#gameScreen .dash-center{grid-area:center}
+#gameScreen .dash-right{grid-area:right}
+#gameScreen .dash-left .panel:nth-child(2){flex:1;overflow:hidden}
+#gameScreen .dash-right .panel:nth-child(2){flex:1;overflow:hidden}
+#gameScreen .dash-right .panel:last-child{height:auto;flex:1 1 50%;min-height:0}
+#gameScreen .dash-center .board-panel{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:2px}
+#gameScreen .dash-center .board-panel h2{margin:0}
+#gameScreen .dash-center .board-panel .divider{margin:3px 0}
+#gameScreen .board{height:clamp(120px,24dvh,215px);max-width:650px;margin:0 auto;flex-shrink:1}
+#gameScreen .board .slot{top:18px;height:calc(100% - 21px)}
+#gameScreen .board .position-labels{height:17px;font-size:.7rem}
+#gameScreen .board .card .card-left{font-size:clamp(1.3rem,3vw,2.4rem)}
+#gameScreen .board .card .card-half{font-size:clamp(.8rem,1.6vw,1.3rem)}
+#gameScreen .board .coin{font-size:clamp(.8rem,1.6vw,1.3rem)}
+#gameScreen .hand{gap:5px;align-items:center}
+#gameScreen .hand button{min-width:58px;height:44px;padding:5px;font-size:.76rem}
+#gameScreen .hand .coin{width:36px;height:36px;margin:0;font-size:.78rem}
+#gameScreen .effect{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
+#gameScreen .effect>div{padding:5px;font-size:.72rem;line-height:1.18}
+#gameScreen .effect small{font-size:.65rem}
+#gameScreen .inventory-grid{gap:4px;margin-top:5px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+#gameScreen .inventory-chip{font-size:.76rem;padding:5px}
+#gameScreen #matchInfo,#gameScreen #inventory{font-size:.79rem;line-height:1.35}
+#gameScreen pre{height:60px;max-height:60px;min-height:0;margin:0;padding:6px;font-size:.65rem}
+#gameScreen #effectHelp{font-size:.8rem}
+#gameScreen #effectHelp button{margin-top:4px}
+#gameScreen .status{font-size:.83rem}
+#gameScreen #scores{font-size:.85rem;font-weight:700}
+#gameScreen .modal{max-height:85dvh}
+@media(max-height:760px) and (min-width:850px){
+ #gameScreen{gap:5px;padding:5px 8px}
+ #gameScreen .dashboard-col{gap:4px}
+ #gameScreen .panel{padding:5px 7px}
+ #gameScreen .board{height:clamp(108px,22dvh,165px)}
+ #gameScreen .dash-right .panel:last-child{height:auto}
+ #gameScreen pre{height:40px;max-height:40px}
+ #gameScreen .effect>div{padding:3px}
+}
+@media(max-width:849px){
+ #gameScreen:not([hidden]){display:flex;flex-direction:column;height:100vh;overflow:auto;padding:8px}
+ #gameScreen .dashboard-col{overflow:visible;flex-shrink:0}
+ #gameScreen .board{height:165px}
+ #gameScreen .dash-center .board-panel{flex:auto}
+ #gameScreen .dash-right .panel:last-child{height:auto}
+}
+#gameScreen .dash-right .player-info{flex:1 1 50%;min-height:0;display:flex;flex-direction:column;gap:7px;overflow:hidden}
+#gameScreen .dash-right .player-info h3{font-size:.8rem;margin:4px 0 0}
+#gameScreen .dash-right .player-info .hand{align-content:flex-start;overflow:auto;min-height:0}
+#gameScreen .dash-right .player-info .hand button{flex:0 0 auto}
+#gameScreen .dash-left .coin-reference-panel{flex:1;min-height:0;overflow:auto}
+#gameScreen .dash-left .coin-reference-panel .effect{grid-template-columns:repeat(2,minmax(0,1fr))}
+#gameScreen .dash-left .coin-reference-panel .effect>div{min-width:0}
+#gameScreen .dash-left .coin-reference-panel .effect-heading{display:flex;justify-content:space-between;gap:3px;align-items:center}
+#gameScreen .effect-count{font-size:.68rem;font-weight:800;white-space:nowrap}
+#gameScreen .effect-values{font-weight:800;margin-top:3px}
+#gameScreen .player-info-top{display:flex;flex-direction:column;gap:10px}
+#gameScreen .treasure-display{display:flex;align-items:center;gap:10px}
+#gameScreen .info-label{font-size:.78rem;font-weight:700}
+#gameScreen .treasure-gem{font-size:2.25rem;line-height:1;filter:drop-shadow(0 1px 1px #0003)}
+#gameScreen .gem-gray{color:#a3a8b2}
+#gameScreen .gem-red{color:#ef4444}
+#gameScreen .gem-blue{color:#3b82f6}
+#gameScreen .chip-display{display:flex;align-items:center;gap:9px;border:1px solid #c8d2e0;border-radius:10px;padding:7px;background:#fff5d9;color:#704b12}
+#gameScreen .chip-display small{display:block;font-size:.7rem}
+#gameScreen .chip-icon{display:grid;place-items:center;width:42px;height:42px;flex:0 0 42px;border:3px solid #b8842e;border-radius:50%;background:#f9d474;font-size:1.5rem}
+#gameScreen .chip-used{background:#e4e6ea;color:#81858d;border-color:#bdc2c9}
+#gameScreen .chip-used .chip-icon{background:#b8bcc4;border-color:#979da6;color:#777c85}
+#gameScreen .card-back{display:grid;place-items:center;width:58px;height:44px;border-radius:8px;border:2px solid #435c84;background:repeating-linear-gradient(45deg,#233c66,#233c66 6px,#38588b 6px,#38588b 12px);color:#fff;font-size:1.15rem;box-shadow:0 1px 3px #0003}
+#gameScreen #stockSummary{font-size:.75rem;font-weight:700;margin-bottom:6px}
+@media(max-height:760px) and (min-width:850px){#gameScreen .treasure-gem{font-size:1.7rem}#gameScreen .chip-icon{width:30px;height:30px;flex-basis:30px;font-size:1rem}#gameScreen .player-info-top{gap:4px}}
+#gameScreen .debug-details{margin-top:6px;font-size:.7rem}#gameScreen .debug-details pre{max-height:70px;overflow:auto}#gameScreen .dash-right .player-info{height:auto!important;flex:1 1 50%!important}/* コイン早見表は背景色にかかわらず黒文字で統一 */
+#gameScreen .coin-reference-panel .effect .effect-color,
+#gameScreen .coin-reference-panel .effect .effect-color *,
+.rules-coin-table .effect-color,
+.rules-coin-table .effect-color *{color:#111827!important;text-shadow:none!important}
+#gameScreen .coin-reference-panel .effect .effect-color.black,
+.rules-coin-table .effect-color.black{background:#b7bac1!important}
+.start-actions,.header-actions{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}
+.header-actions{justify-content:flex-end}
+.rules-overlay[hidden]{display:none!important}
+.rules-overlay{position:fixed;inset:0;z-index:10000;background:rgba(12,22,37,.75);display:flex;justify-content:center;align-items:center;padding:14px}
+.rules-dialog{width:min(760px,100%);max-height:calc(100vh - 28px);background:#fff;color:#1c2635;border-radius:14px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 12px 55px #0006}
+.rules-heading,.rules-footer{padding:12px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-shrink:0;background:#f1f5fa}
+.rules-heading h2{font-size:1.12rem;margin:0}.rules-heading button{font-size:1.5rem;line-height:1}
+.rules-body{overflow-y:auto;padding:8px 20px 18px;line-height:1.55}
+.rules-body section{margin:12px 0}.rules-body h3{font-size:1rem;margin:0 0 5px}.rules-body p{font-size:.87rem;margin:4px 0 9px}
+.rules-coin-table{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 0}
+.rules-coin-table .effect-color{border:1px solid #a4adba;border-radius:7px;padding:7px;font-size:.82rem}
+@media(max-width:530px){.rules-coin-table{grid-template-columns:1fr}.rules-body{padding:8px 12px}}
+.cpu-level-select{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;margin:14px auto;padding:12px;border:1px solid #cbd5e1;border-radius:12px;max-width:520px}
+.cpu-level-select label{display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-size:.9rem}
+.cpu-level-select input{accent-color:#2563eb}
+/* Popup peek mode: hidden overlays do not consume clicks or advance the game */
+#restorePopup{position:fixed;right:18px;bottom:18px;z-index:1000;background:#244a85;color:white;border:2px solid white;border-radius:24px;padding:12px 18px;font-weight:800;box-shadow:0 5px 24px #0006}
+#restorePopup[hidden]{display:none!important}
+.popup-hide-btn{float:right;margin:-7px -7px 7px 7px;font-size:.78rem!important;background:#edf3fb!important;color:#173a67!important}
+#specialGuide .guide-hide-btn{pointer-events:auto;margin-top:7px;padding:3px 10px;font-size:.76rem;background:#edf3fb}
+#specialGuide.peek-hidden{display:none!important}
+#modalBackdrop.peek-hidden{display:none!important}
+#rulesOverlay.peek-hidden{display:none!important}
+.share-x{background:#17191c;color:white;border:1px solid #17191c;font-weight:750}.share-x:hover{background:#30343a}
+/* Mobile: the main match fits above the fold; reference and logs scroll below. */
+@media (max-width:849px){
+ html,body{margin:0;max-width:none;padding:0;overflow-x:hidden}
+ #gameScreen:not([hidden]){display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:"header" "cpu" "center" "human" "left";grid-template-rows:44px 106px minmax(0,calc(100vh - 44px - 106px - 174px - 20px)) 174px auto;gap:5px;height:auto;min-height:100vh;overflow:visible;padding:5px 7px 22px;align-content:start}
+ #gameScreen>header{grid-area:header;min-height:0;flex-wrap:nowrap;overflow:hidden}
+ #gameScreen>header h1{font-size:.83rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ #gameScreen .header-actions{flex-wrap:nowrap;gap:3px}
+ #gameScreen .header-actions button{font-size:.68rem;padding:5px 6px;white-space:nowrap}
+ #gameScreen .dash-right{display:contents}
+ #gameScreen .dash-right .cpu-info{grid-area:cpu}
+ #gameScreen .dash-right .human-info{grid-area:human}
+ #gameScreen .dash-right .player-info{min-height:0;height:100%;overflow:hidden;padding:5px 8px;gap:3px}
+ #gameScreen .dash-right .player-info h2{font-size:.78rem;margin:0}
+ #gameScreen .dash-right .player-info h3{font-size:.68rem;margin:0}
+ #gameScreen .player-info-top{display:flex;flex-direction:row;align-items:center;gap:8px;min-height:0}
+ #gameScreen .treasure-display{gap:3px;white-space:nowrap}
+ #gameScreen .info-label{font-size:.65rem}
+ #gameScreen .treasure-gem{font-size:1.25rem}
+ #gameScreen .chip-display{padding:2px 5px;gap:4px;min-width:0;flex:1}
+ #gameScreen .chip-icon{width:25px;height:25px;flex-basis:25px;border-width:2px;font-size:.9rem}
+ #gameScreen .chip-display strong{font-size:.64rem}
+ #gameScreen .chip-display small{font-size:.58rem;line-height:1.1}
+ #gameScreen .dash-right .player-info .hand{overflow-x:auto;overflow-y:hidden;flex-wrap:nowrap;align-items:center;gap:4px;min-height:40px}
+ #gameScreen .card-back{width:39px;height:32px;flex:0 0 39px;font-size:.85rem}
+ #gameScreen .hand button{height:39px;min-width:55px;font-size:.7rem;padding:3px}
+ #gameScreen .dash-center{grid-area:center;min-height:0;overflow:hidden;gap:3px;display:flex;flex-direction:column}
+ #gameScreen .dash-center>.panel:not(.board-panel){flex:0 0 auto;min-height:27px;padding:3px 7px;display:flex;align-items:center;gap:7px;overflow:hidden}
+ #gameScreen .dash-center>.panel:not(.board-panel) h2{font-size:.65rem;margin:0;white-space:nowrap}
+ #gameScreen .dash-center>.panel:not(.board-panel) .hand{flex-wrap:nowrap;overflow:hidden}
+ #gameScreen .dash-center>.panel:not(.board-panel) .coin{width:24px;height:24px;font-size:.6rem;margin:0}
+ #gameScreen .dash-center .board-panel{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;justify-content:space-around;gap:1px;padding:3px 5px}
+ #gameScreen .dash-center .board-panel h2{font-size:.73rem;line-height:1.1;margin:0}
+ #gameScreen .dash-center .board-panel .divider{margin:1px 0}
+ #gameScreen .board{height:auto;min-height:0;flex:1 1 0;width:100%;max-width:100%;margin:0}
+ #gameScreen .board .slot{top:14px;height:calc(100% - 16px)}
+ #gameScreen .board .position-labels{height:14px;font-size:.57rem}
+ #gameScreen .board .card .card-left{font-size:clamp(.9rem,4vw,1.5rem)}
+ #gameScreen .board .card .card-half{font-size:clamp(.65rem,2.5vw,1rem)}
+ #gameScreen .board .coin{font-size:clamp(.65rem,2.7vw,1rem)}
+ #gameScreen .dash-left{grid-area:left;min-height:0;overflow:visible;display:flex;flex-direction:column;gap:7px;margin-top:9px}
+ #gameScreen .dash-left .coin-reference-panel{overflow:visible;flex:none}
+ #gameScreen .dash-left .panel:nth-child(2){overflow:visible;flex:none}
+ #gameScreen .dash-left .coin-reference-panel .effect{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #gameScreen .dash-left pre{max-height:140px;height:140px}
+}
+@media (max-width:849px) and (max-height:650px){
+ #gameScreen:not([hidden]){grid-template-rows:40px 90px minmax(0,calc(100vh - 40px - 90px - 144px - 20px)) 144px auto}
+ #gameScreen .dash-right .player-info .hand{min-height:30px}
+ #gameScreen .hand button{height:31px}
+ #gameScreen .dash-center>.panel:not(.board-panel){min-height:23px}
+}
+</style></head><body>
+<noscript><div style="background:#fff0cb;color:#543800;padding:14px;text-align:center">この表示環境ではJavaScriptが無効です。iOSのファイルプレビューではなく、Safariで公開URLを開いてください。</div></noscript>
+<div id="startScreen" class="screen"><div class="screen-panel"><div style="font-size:3.5rem">🪙</div><h1>気まぐれコイン</h1><p>2人用テストプレイ<br>あなた vs CPU</p><div class="cpu-level-select"><strong>CPUの強さ</strong><label><input type="radio" name="cpuLevel" value="weak" checked> 弱CPU（ランダム）</label><label><input type="radio" name="cpuLevel" value="strong"> 強CPU（得点重視）</label></div><p class="muted">予約カードを配置してコインを獲得。<br>先にオタカラを2個集めたプレイヤーが勝利します。</p><div class="start-actions"><button id="startGame" type="button" class="primary" onclick="try{start()}catch(e){alert('ゲーム開始エラー: '+e.message);console.error(e)}">ゲーム開始</button><button type="button" class="open-rules" onclick="try{openRules()}catch(e){alert('ルール表示エラー: '+e.message);console.error(e)}">ゲームルール</button><button type="button" id="shareStart" class="share-x">𝕏 で共有</button></div></div></div>
+<div id="endScreen" class="screen" hidden><div class="screen-panel"><div style="font-size:3.5rem">🏆</div><h1 id="endTitle">ゲーム終了</h1><p id="endMessage"></p><div class="result-grid"><div>あなた<strong id="endHumanTreasure">0個</strong><span id="endHumanScore"></span></div><div>CPU<strong id="endCpuTreasure">0個</strong><span id="endCpuScore"></span></div></div><p id="endMatchCount" class="muted"></p><div class="start-actions"><button id="backToStart" class="primary">最初の画面に戻る</button><button type="button" id="shareEnd" class="share-x">𝕏 に結果を共有</button></div></div></div>
+<div id="gameScreen" hidden>
+<header class="bar"><div><h1>🪙 気まぐれコイン — Section 6 コンパクト画面版</h1><p class="muted">予約 → コイントス → チップ判断 → 特殊効果 → オタカラ判定</p></div><div class="header-actions"><button type="button" class="open-rules" onclick="try{openRules()}catch(e){alert('ルール表示エラー: '+e.message);console.error(e)}">ゲームルール</button><button id="restart">新しいゲーム</button></div></header>
+<div class="dashboard-col dash-left"><section class="panel"><div class="bar"><div id="progress"></div><div id="stock"></div></div><p id="status" class="status"></p><div id="effectHelp"></div></section><section class="panel coin-reference-panel"><h2>コイン早見表・残数</h2><div id="stockSummary"></div><div class="effect" id="effects"></div><div id="inventory" class="inventory"></div><details class="debug-details"><summary>デバッグログ</summary><pre id="log"></pre></details></section><section class="panel"><h2>暫定スコア</h2><div id="scores" class="bar"></div><p class="muted">左端（第3ラウンド）のカード基礎得点+1を起点に、第3→第2→第1ラウンドの順に演算します。白・黒を取得した枠はカード得点+1を使います。</p></section></div>
+<div class="dashboard-col dash-center"><section class="panel"><h2>CPUの手元（白・黒コイン）</h2><div id="held-cpu" class="hand"></div></section><section class="panel board-panel"><h2>CPUの場</h2><div id="cpuBoard" class="board"></div><hr class="divider"><h2>あなたの場</h2><div id="humanBoard" class="board"></div></section><section class="panel"><h2>あなたの手元（白・黒コイン）</h2><div id="held-human" class="hand"></div></section></div>
+<div class="dashboard-col dash-right">
+<section class="panel player-info cpu-info"><h2>相手プレイヤー（CPU）</h2><div id="cpuInfo" class="player-info-top"></div><h3>相手の手札 <span id="cpuHandCount"></span></h3><div id="cpuHand" class="hand"></div></section>
+<section class="panel player-info human-info"><h2>あなた</h2><div id="humanInfo" class="player-info-top"></div><h3>あなたの手札 <span class="muted">（クリックして予約）</span></h3><div id="hand" class="hand"></div></section>
+</div>
+<div id="specialGuide" role="status" aria-live="polite"><strong id="specialGuideTitle"></strong><p id="specialGuideText"></p><div class="step" id="specialGuideStep"></div><button type="button" id="temporarilyHideGuide" class="guide-hide-btn">一時非表示</button></div>
+<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modal"><button type="button" id="temporarilyHideModal" class="popup-hide-btn" title="盤面を確認するため一時非表示">一時非表示</button><h2 id="modalTitle"></h2><p id="modalInfo"></p><div id="modalContent" class="hand"></div><div id="modalAction"></div></div></div>
+</div>
+<button id="restorePopup" type="button" hidden>ポップアップを再表示</button>
+<div id="rulesOverlay" class="rules-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
+ <div class="rules-dialog">
+  <div class="rules-heading"><button id="temporarilyHideRules" type="button">一時非表示</button><h2 id="rulesTitle">気まぐれコイン｜ゲームルール</h2><button id="closeRulesTop" type="button" aria-label="ルールを閉じる">×</button></div>
+  <div class="rules-body">
+   <section><h3>目的</h3><p>CPUと対戦し、各勝負でより高い得点を獲得します。先にオタカラを<strong>2個</strong>獲得したプレイヤーの勝利です。同点の場合は両者がオタカラを1個獲得します。</p></section>
+   <section><h3>予約カードの配置とコインの獲得</h3><p>最初に各プレイヤーは予約カードを5枚持ちます。各勝負は3回の配置で進み、1回につき各自が予約カードを1枚出します。先手は配置ごとに交代します。<strong>後からカードを出したプレイヤーが先に</strong>コインを取得します。</p><p>予約した色のコインが袋にあればそのコインを獲得します。なければ袋からランダムに2個を候補として取り出し、1個を選択します。選ばなかったコインは袋へ戻ります。獲得したコインはトスして表裏の効果を確定します。</p></section>
+   <section><h3>コインの効果</h3><div id="rulesCoinTable" class="rules-coin-table"></div><p>得点は<strong>左側（3枚目）の予約カードの+1</strong>を起点に、左→中央→右のコイン効果を順番に計算します。通常の四則演算の優先順位は使いません。黒・白のコインを獲得したカードはコインの代わりに+1として計算します。</p></section>
+   <section><h3>黒・白コインの特殊効果</h3><p>黒・白コインはカードに置かず手元に保管し、両者が3枚ずつコインを獲得した後に処理します。最終配置の後手から処理します。対象がなければ効果は不発になります。</p><p><strong>黒・表：</strong>場の通常コイン1個を反転。<strong>黒・裏：</strong>場の通常コイン1個を袋のランダムなコインと交換し、再トス。<strong>白・表：</strong>同じプレイヤーの場の通常コイン2個を交換。<strong>白・裏：</strong>自分と相手の場の通常コインを1個ずつ交換。</p></section>
+   <section><h3>特殊チップ</h3><p>コイントス直後に使用できます。<strong>表：振り直し</strong>／<strong>裏：防御</strong>（コインを相手の特殊効果から保護）。1ゲームで各プレイヤー1回のみ使用可能で、次の勝負でも復活しません。</p></section>
+   <section><h3>次の勝負とコンポーネント</h3><p>オタカラ配布後、残りの手札2枚を維持して<strong>3枚引く</strong>か、残り2枚を捨てて<strong>5枚引く</strong>かを選択します。使用した予約カードとコインはゲーム中に再利用しません。未使用コインの残数は画面左側に表示されます。</p></section>
+  </div>
+  <div class="rules-footer"><button id="closeRulesBottom" type="button" class="primary">閉じる</button></div>
+ </div>
+</div>
+<script>
+"use strict";
+const colors={red:"赤",blue:"青",yellow:"黄",green:"緑",black:"黒",white:"白",random:"ランダム",gold:"金",brown:"茶"};
+const faces={red:["+1","+2"],blue:["−2","+4"],yellow:["×1","×2"],green:["÷2","×3"],gold:["+4","×3"],black:["表","裏"],white:["表","裏"],brown:["+1","+0"]};
+const cardCounts={red:5,blue:5,yellow:5,green:5,black:3,white:3,random:4};
+const coinCounts={red:3,blue:3,yellow:3,green:3,gold:2,black:3,white:3,brown:4};
+const CARD_BASE=1;
+const $=id=>document.getElementById(id),other=p=>p==="human"?"cpu":"human",player=p=>p==="human"?"あなた":"CPU";
+const sample=a=>a[Math.floor(Math.random()*a.length)];
+let state,logs=[],modalNext=null;
+let hiddenPopup=null;
+function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function bag(o){return shuffle(Object.entries(o).flatMap(([k,n])=>Array(n).fill(k)))}
+function log(x){logs.push(x);const el=$("log");if(el){el.textContent=logs.slice(-120).join("\n");el.scrollTop=el.scrollHeight}}
+function score(p){let n=state.boards[p][2]?.card?CARD_BASE:0;for(let i=2;i>=0;i--){let s=state.boards[p][i];if(!s)continue;let f=s.coin?s.coin.face:s.special?`+${CARD_BASE}`:null;if(!f)continue;let op=f[0],v=Number(f.slice(1));if(op==="+")n+=v;else if(op==="−")n-=v;else if(op==="×")n*=v;else if(op==="÷")n/=v}return n}
+function modal(title,info,buttons,action){clearPeek();$("modalTitle").textContent=title;$("modalInfo").textContent=info||"";$("modalContent").replaceChildren();$("modalAction").replaceChildren();buttons.forEach(o=>{let b=document.createElement("button");b.textContent=o.label;b.className=o.color||"";b.onclick=o.fn;$("modalContent").append(b)});if(action){let b=document.createElement("button");b.className="primary";b.textContent=action.label;b.onclick=action.fn;$("modalAction").append(b)}$("modalBackdrop").classList.add("active")}
+function hideSpecialGuide(){if(hiddenPopup==="guide")clearPeek();$("specialGuide").classList.remove("active")}
+function showSpecialGuide(){
+ const t=state.target;
+ if(state.phase!=="effect"||!t){hideSpecialGuide();return}
+ const effectNames={flip:"黒・表：コインを裏返す",replace:"黒・裏：袋のコインと交換してトス",ownswap:"白・表：同じプレイヤーのコイン2個を交換",crossswap:"白・裏：自分と相手のコインを交換"};
+ $("specialGuideTitle").textContent=effectNames[t.mode];
+ $("specialGuideText").textContent=t.message;
+ $("specialGuideStep").textContent=t.first?"操作：青枠のコインから2個目をクリックしてください":"操作：青枠のコインを直接クリックしてください";
+ $("specialGuide").classList.add("active");
+}
+function closeModal(){clearPeek();$("modalBackdrop").classList.remove("active","hand-prompt");$("modalContent").replaceChildren();$("modalAction").replaceChildren()}
+function showScreen(name){clearPeek();for(let id of ["startScreen","gameScreen","endScreen"])$(id).hidden=(id!==name);window.scrollTo(0,0)}
+function shareToX(isResult){
+ let message;
+ if(isResult&&state){
+  const h=state.treasure.human,c=state.treasure.cpu;
+  const outcome=h===c?"引き分け":h>c?"勝利！":"敗北…";
+  message=`「気まぐれコイン」をプレイしました！\n結果：${outcome}\nオタカラ：自分 ${h}個 / CPU ${c}個\n最終得点：自分 ${score("human")}点 / CPU ${score("cpu")}点\n対戦相手：${state.cpuLevel==="strong"?"強CPU":"弱CPU"}\n#気まぐれコイン`;
+ }else{
+  message="コイントスと読み合いのボードゲーム『気まぐれコイン』！ オタカラを2個集めて勝利を目指そう！\n#気まぐれコイン";
+ }
+ // Xへの投稿はユーザーが確認してから行う。ローカルHTMLのfile: URLは共有しない。
+ const url=new URL("https://twitter.com/intent/tweet");
+ url.searchParams.set("text",message);
+ if(location.protocol==="https:"||location.protocol==="http:")url.searchParams.set("url",location.href);
+ // noopener 指定時は正常に新規タブが開いても戻り値が null になる場合がある。
+ // 元タブへの遷移フォールバックは行わない。
+ window.open(url.toString(),"_blank","noopener,noreferrer");
+}
+function returnToStart(){closeModal();hideSpecialGuide();state=null;showScreen("startScreen")}
+function start(){
+ const cpuLevel=document.querySelector('input[name="cpuLevel"]:checked')?.value||"weak";
+ showScreen("gameScreen");hideSpecialGuide();closeModal();logs=[];
+ state={cpuLevel,round:0,lead:null,hands:{human:[],cpu:[]},boards:{human:[null,null,null],cpu:[null,null,null]},held:{human:[],cpu:[]},cards:{},coins:bag(coinCounts),deck:bag(cardCounts),phase:"opening-toss",pending:null,queue:[],target:null,lastSecond:null,effectQueue:[],treasure:{human:0,cpu:0},chip:{human:true,cpu:true},match:1,treasureAwardedMatch:0,matchLead:null};
+ for(let i=0;i<5;i++){state.hands.human.push(state.deck.pop());state.hands.cpu.push(state.deck.pop())}
+ log("ゲーム開始。CPU："+(cpuLevel==="strong"?"強":"弱")+"。先手・後手決定のコイントス待ち");
+ render();
+ modal("先手・後手を決めるコイントス","表が出たらあなたが先手、裏が出たらCPUが先手です。このコイントスはゲームのコイン袋を消費しません。",[],{label:"コイントス",fn:openingToss});
+}
+function openingToss(){
+ if(!state||state.phase!=="opening-toss")return;
+ const heads=Math.random()<0.5;
+ const lead=heads?"human":"cpu";
+ state.matchLead=lead;state.lead=lead;
+ log(`開始時コイントス：${heads?"表":"裏"}。${player(lead)}が先手`);
+ render();
+ modal("先手・後手決定",`結果：${heads?"表":"裏"}。${player(lead)}が先手、${player(other(lead))}が後手です。以降は配置ごとに先手が交代します。`,[],{label:"確認してゲーム開始",fn:()=>{closeModal();state.phase="place";render();advance()}});
+}
+function positionName(i){return ["右側","真ん中","左側"][i]}
+function slotHTML(p,i){
+ let x=state.boards[p][i],c=x?.coin;
+ let selectable=!!c&&state.phase==="effect"&&state.target?.allowed.some(t=>t.p===p&&t.i===i);
+ let selected=state.target?.first?.p===p&&state.target.first.i===i;
+ if(!x)return `<div class="slot pos-${i}"><div class="slot-empty">未配置</div></div>`;
+ let overlay=c?`<button type="button" class="coin ${c.color} ${selectable?"target":""} ${selected?"selected-target":""}" ${selectable?`data-p="${p}" data-i="${i}"`:"disabled"}>${c.face}${c.protected?" 🛡":""}</button>`:
+ x.special?`<div class="slot-note">${colors[x.special.color]}は手元<br>カード +${CARD_BASE}</div>`:"";
+ return `<div class="slot pos-${i}"><div class="card ${x.card}"><div class="card-left">+${CARD_BASE}</div><div class="card-half">+${CARD_BASE}</div><span class="card-name">${colors[x.card]}</span></div>${overlay}</div>`;
+}
+function render(){
+ for(const p of ["human","cpu"]){
+  const n=state.treasure[p];
+  const gems=[0,1].map(i=>`<span class="treasure-gem ${n>i?(i===0?"gem-red":"gem-blue"):"gem-gray"}" title="オタカラ${i+1}個目：${n>i?"獲得済み":"未獲得"}">◆</span>`).join("");
+  $(p+"Info").innerHTML=`<div class="treasure-display"><span class="info-label">オタカラ</span>${gems}</div><div class="chip-display ${state.chip[p]?"":"chip-used"}" title="${state.chip[p]?"使用可能":"使用済み"}"><span class="chip-icon">◉</span><span><strong>特殊チップ ${state.chip[p]?"使用可能":"使用済み"}</strong><small>表：振り直し ／ 裏：防御</small></span></div>`;
+ }
+ $("cpuHand").innerHTML=state.hands.cpu.map(()=>'<span class="card-back" title="内容は非公開">🪙</span>').join("");
+ $("cpuHandCount").textContent=`（${state.hands.cpu.length}枚）`;
+for(let p of ["human","cpu"]){$(p+"Board").innerHTML=`<div class="position-labels"><span>左側</span><span>真ん中</span><span>右側</span></div>`+[0,1,2].map(i=>slotHTML(p,i)).join("");$("held-"+p).innerHTML=state.held[p].map(c=>`<span class="coin ${c.color}" title="${colors[c.color]}">${c.face}</span>`).join("")||'<span class="muted">なし</span>'}
+document.querySelectorAll(".target").forEach(el=>el.onclick=()=>clickTarget(el.dataset.p,Number(el.dataset.i)));
+$("scores").textContent=`あなた：${score("human")}点　｜　CPU：${score("cpu")}点`;
+$("progress").textContent=`配置位置：${positionName(Math.min(state.round,2))}　｜　先手：${player(state.lead)}`;$("stock").textContent=`未使用コイン：${state.coins.length} / 24個`;
+$("stockSummary").textContent=`未使用コイン ${state.coins.length} / 24個　｜　未使用予約カード ${state.deck.length}枚`;
+$("effects").innerHTML=Object.entries(faces).map(([k,v])=>`<div class="effect-color ${k}"><div class="effect-heading"><strong>${colors[k]}コイン</strong><span class="effect-count">残り ${state.coins.filter(c=>c===k).length} / ${coinCounts[k]}</span></div><div class="effect-values">${v.join(" ／ ")}</div>${k==="black"?"<small>表：場の1個を反転<br>裏：袋から交換して再トス</small>":k==="white"?"<small>表：同じ場で2個交換<br>裏：自分と相手で交換</small>":""}</div>`).join("");
+$("hand").replaceChildren();state.hands.human.forEach((c,i)=>{let b=document.createElement("button");b.className=c;b.textContent=colors[c]+"予約";b.disabled=state.phase!=="place"||state.cards.human!==undefined;b.onclick=()=>{if(state.phase==="place"){closeModal();place("human",i)}};$("hand").append(b)});
+$("status").textContent=state.phase==="done"?"3配置完了":state.phase==="effect"?"盤面のコインを直接クリックしてください":state.phase==="place"?"予約カードを選択してください":state.phase==="replenish"?"手札を補充しています":"コイン処理中";
+if(state.phase==="effect"){$("effectHelp").replaceChildren();showSpecialGuide()}else{hideSpecialGuide();if(state.phase!=="review")$("effectHelp").replaceChildren()}}
+function openReservation(){if(state.phase!=="place"||state.cards.human!==undefined)return;modal("予約カードを選択してください","画面下の『あなたの手札』からカードをクリックしてください。",[]);$("modalBackdrop").classList.add("hand-prompt")}
+function cpuNotice(title,info,after){modal(title,info,[],{label:"次へ",fn:()=>{closeModal();after()}})}
+function place(p,i){if(state.phase!=="place"||state.cards[p]!==undefined)return;let c=state.hands[p].splice(i,1)[0];state.cards[p]=c;state.boards[p][state.round]={card:c,coin:null,special:null};log(`${positionName(state.round)} ${player(p)}：${colors[c]}予約`);render();
+if(p==="cpu")cpuNotice("CPUの予約カード",`${positionName(state.round)}：${colors[c]}予約カードを出しました。`,advance);else advance()}
+// 強CPU：配置位置ごとの色優先。黒・白を既に持つ場合は重複を避ける。
+function cpuCardChoice(){
+ const hand=state.hands.cpu;
+ if(state.cpuLevel!=="strong")return Math.floor(Math.random()*hand.length);
+ const preferred=[["yellow","green"],["red","blue"],["black","white","random"]][state.round]||[];
+ const hasSpecial=state.boards.cpu.some(slot=>slot&&["black","white"].includes(slot.card));
+ let candidates=hand.map((color,i)=>({color,i})).filter(x=>preferred.includes(x.color));
+ if(hasSpecial){
+  const nonSpecial=candidates.filter(x=>!["black","white"].includes(x.color));
+  if(nonSpecial.length)candidates=nonSpecial;
+  else if(state.round===2){
+   const randomCard=candidates.filter(x=>x.color==="random");
+   if(randomCard.length)candidates=randomCard;
+  }
+ }
+ if(!candidates.length)candidates=hand.map((color,i)=>({color,i}));
+ return sample(candidates).i;
+}
+// コイン選択は現在の得点期待値を最大化（表裏を等確率で評価）。
+function expectedCpuScore(color,round=state.round){
+ const board=state.boards.cpu,previous=board[round];
+ const possibilities=["black","white"].includes(color)?[null]:faces[color].map((face,side)=>({color,face,side}));
+ let total=0;
+ for(const coin of possibilities){
+  board[round]={card:previous?.card||color,coin,special:coin?null:{color,face:"+1"}};
+  total+=score("cpu");
+ }
+ board[round]=previous;
+ return total/possibilities.length;
+}
+function cpuCoinChoice(candidates){
+ if(state.cpuLevel!=="strong")return Math.floor(Math.random()*candidates.length);
+ const values=candidates.map(c=>expectedCpuScore(c)),max=Math.max(...values);
+ return sample(values.map((v,i)=>({v,i})).filter(x=>Math.abs(x.v-max)<1e-8)).i;
+}
+// 特殊効果の選択を盤面の得点差で比較する。黒・裏の袋交換は期待値を使用。
+function cpuEffectValue(mode,a,b){
+ const originalA=a.s.coin,originalB=b?.s.coin;
+ const evaluate=()=>score("cpu")-score("human");
+ let result;
+ if(mode==="flip"){
+  originalA.side=1-originalA.side;originalA.face=faces[originalA.color][originalA.side];
+  result=evaluate();
+  originalA.side=1-originalA.side;originalA.face=faces[originalA.color][originalA.side];
+ }else if(mode==="replace"){
+  let sum=0;
+  for(const color of state.coins){
+   if(color==="black"||color==="white"){
+    a.s.coin=null;a.s.special={color,face:"+1"};
+    sum+=evaluate();
+   }else{
+    for(let side=0;side<2;side++){
+     a.s.coin={color,side,face:faces[color][side]};
+     sum+=evaluate()/2;
+    }
+   }
+  }
+  result=sum/state.coins.length;
+  a.s.coin=originalA;a.s.special=null;
+ }else{
+  a.s.coin=originalB;b.s.coin=originalA;
+  result=evaluate();
+  a.s.coin=originalA;b.s.coin=originalB;
+ }
+ return result;
+}
+function cpuEffectTargets(mode,allowed,owner){
+ const pairs=[];
+ if(mode==="flip"||mode==="replace")return allowed.map(a=>({a,b:null,value:cpuEffectValue(mode,a,null)}));
+ for(const a of allowed){
+  const candidates=mode==="ownswap"
+   ?slots(a.p).filter(b=>!same(a,b)&&(b.p===owner||!b.s.coin.protected))
+   :slots(other(owner)).filter(b=>!b.s.coin.protected);
+  for(const b of candidates){
+   if(mode==="ownswap"&&a.p===b.p&&a.i>=b.i)continue;
+   pairs.push({a,b,value:cpuEffectValue(mode,a,b)});
+  }
+ }
+ return pairs;
+}
+function advance(){if(state.phase!=="place")return;let a=state.lead,b=other(a);if(state.cards[a]===undefined){if(a==="cpu")place("cpu",cpuCardChoice());else openReservation();return}if(state.cards[b]===undefined){if(b==="cpu")place("cpu",cpuCardChoice());else openReservation();return}state.phase="coins";state.queue=[b,a];state.lastSecond=b;log(`取得順：${player(b)} → ${player(a)}`);nextCoin()}
+function nextCoin(){if(!state.queue.length){finishRound();return}let p=state.queue.shift(),card=state.cards[p];state.pending={player:p};let i=state.coins.indexOf(card);if(i>=0){let c=state.coins.splice(i,1)[0];log(`${player(p)}：${colors[c]}コイン取得`);beginToss(p,c);return}let candidates=[];for(let j=0;j<2&&state.coins.length;j++)candidates.push(state.coins.splice(Math.floor(Math.random()*state.coins.length),1)[0]);if(!candidates.length){log("袋が空です");finishRound();return}state.pending.candidates=candidates;log(`${player(p)}：同色なし。候補 ${candidates.map(c=>colors[c]).join("・")}`);if(p==="cpu"){let ix=cpuCoinChoice(candidates);cpuNotice("CPUのコイン選択",`候補：${candidates.map(c=>colors[c]).join("・")}。選択：${colors[candidates[ix]]}コイン`,()=>chooseCoin(ix))}else{state.phase="choose";modal("コインを選択","同じ色がないため、袋から引いた候補2個のうち1個を選びます。",candidates.map((c,i)=>({label:colors[c]+"コイン",color:c,fn:()=>chooseCoin(i)})));render()}}
+function chooseCoin(i){let q=state.pending,c=q?.candidates?.[i];if(!c)return;q.candidates.forEach((x,j)=>{if(i!==j)state.coins.push(x)});closeModal();state.phase="coins";log(`${player(q.player)}：${colors[c]}選択（未選択は袋に戻す）`);beginToss(q.player,c)}
+function beginToss(p,c){state.phase="toss";if(p==="human"){modal("コイントス",`${colors[c]}コインを取得しました。ボタンを押すと表裏をランダムに決定します。`,[],{label:"コインをトス！",fn:()=>{closeModal();completeToss(p,c)}});render()}else completeToss(p,c)}
+function completeToss(p,c){
+ let side=Math.floor(Math.random()*2),coin={color:c,side,face:faces[c][side]};
+ let slot=state.boards[p][state.round];
+ if(c==="black"||c==="white"){
+  state.held[p].push(coin);slot.special=coin;
+  log(`${player(p)}：${colors[c]}は手元に配置（カード+${CARD_BASE}）`);
+ }else slot.coin=coin;
+ state.pending=null;log(`${player(p)}：${colors[c]}トス → ${coin.face}`);render();
+ let next=()=>{state.phase="coins";render();nextCoin()};
+ let msg=`${colors[c]}コイン：${coin.face}。${c==="black"||c==="white"?"特殊効果は全6枚の取得後に処理します。":""}`;
+ if(p==="human")modal("コイントス結果",msg,[],{label:"確定して進む",fn:()=>{closeModal();offerChip(p,coin,next)}});
+ else cpuNotice("CPUのコイントス結果",msg,()=>offerChip(p,coin,next));
+}
+function offerChip(p,coin,done){
+ if(!state.chip[p]){done();return}
+ const normal=!["black","white"].includes(coin.color);
+ if(p==="cpu"){
+  // 強CPU：赤青黄緑金の裏が出たときのみ、ランダムで使用・温存。
+  if(state.cpuLevel==="strong"){
+   const eligible=["red","blue","yellow","green","gold"].includes(coin.color)&&coin.side===1;
+   if(!eligible){done();return}
+   const choice=sample(["振り直し","防御","温存"]);
+   if(choice==="振り直し"){
+    state.chip[p]=false;let old=coin.face;
+    coin.side=Math.floor(Math.random()*2);coin.face=faces[coin.color][coin.side];
+    log(`CPUチップ：振り直し ${old} → ${coin.face}`);
+   }else if(choice==="防御"){
+    state.chip[p]=false;coin.protected=true;
+    log(`CPUチップ：${colors[coin.color]}を防御`);
+   }
+   render();
+   cpuNotice("CPUの特殊チップ",choice==="温存"?"CPUはチップを温存しました。":`CPUは${choice}を選びました。対象：${colors[coin.color]}コイン（${coin.face}）`,done);
+   return;
+  }
+  const opts=normal?["振り直し","防御","温存"]:["温存"];
+  let choice=sample(opts);
+  if(choice==="振り直し"){state.chip[p]=false;let old=coin.face;coin.side=Math.floor(Math.random()*2);coin.face=faces[coin.color][coin.side];log(`CPUチップ：振り直し ${old} → ${coin.face}`)}
+  if(choice==="防御"){state.chip[p]=false;coin.protected=true;log(`CPUチップ：${colors[coin.color]}を防御`)}
+  render();
+  cpuNotice("CPUの特殊チップ",choice==="温存"?"CPUはチップを温存しました。":`CPUは${choice}を選びました。対象：${colors[coin.color]}コイン（${coin.face}）`,done);
+  return;
+ }
+ if(!normal){done();return}
+ modal("特殊チップを使いますか？",`取得した${colors[coin.color]}コイン（${coin.face}）に対して、今だけ使用できます。チップはこのゲームで1回です。`,[
+ {label:"振り直し",fn:()=>{state.chip[p]=false;let old=coin.face;coin.side=Math.floor(Math.random()*2);coin.face=faces[coin.color][coin.side];log(`あなた：振り直し ${old} → ${coin.face}`);render();modal("振り直し結果",`${old} → ${coin.face}`,[],{label:"次へ",fn:()=>{closeModal();done()}})}},
+ {label:"防御",fn:()=>{state.chip[p]=false;coin.protected=true;log(`あなた：${colors[coin.color]}を防御`);closeModal();render();done()}},
+ {label:"温存",fn:()=>{closeModal();done()}}
+ ]);
+}
+function slots(p){return state.boards[p].map((s,i)=>({p,i,s})).filter(x=>x.s?.coin)}
+function same(a,b){return a.p===b.p&&a.i===b.i}
+function swap(a,b){let t=a.s.coin;a.s.coin=b.s.coin;b.s.coin=t;log(`交換：${player(a.p)} ${positionName(a.i)} ↔ ${player(b.p)} ${positionName(b.i)}`)}
+function clickTarget(p,i){let t=state.target;if(state.phase!=="effect"||!t)return;let x=t.allowed.find(x=>x.p===p&&x.i===i);if(!x)return;if(!t.first){if(t.mode==="flip"||t.mode==="replace"){state.target=null;state.phase="coins";t.apply(x);render();if(t.mode==="flip")t.done();return}t.first=x;t.allowed=t.mode==="ownswap"?slots(p).filter(y=>!same(x,y)&&(y.p===t.owner||!y.s.coin.protected)):slots(other(p)).filter(y=>!y.s.coin.protected);t.message=`1個目：${player(p)} ${positionName(i)}。交換する2個目をクリックしてください。`;render();return}let first=t.first;state.target=null;state.phase="coins";swap(first,x);render();t.done()}
+function resolveSpecial(p,coin,done,depth=0){if(!["black","white"].includes(coin.color)||depth>8){done();return}let all=[...slots("human"),...slots("cpu")].filter(x=>x.p===p||!x.s.coin.protected),own=slots(p),mode="",allowed=[],message="",apply=null;
+if(coin.color==="black"&&coin.side===0){mode="flip";allowed=all;message="黒・表：裏返すコインを直接クリックしてください。";apply=x=>{let c=x.s.coin;c.side=1-c.side;c.face=faces[c.color][c.side];log(`黒・表：${player(x.p)} ${positionName(x.i)} → ${c.face}`)}}
+else if(coin.color==="black"){mode="replace";allowed=state.coins.length?all:[];message="黒・裏：袋のコインと交換するコインをクリックしてください。";apply=x=>{
+ const old=x.s.coin.color;
+ // 対象選択後、コイントスと結果確認が終わるまで次の特殊効果・勝敗判定に進まない。
+ const newColor=state.coins.splice(Math.floor(Math.random()*state.coins.length),1)[0];
+ const target=`${player(x.p)}の${positionName(x.i)}`;
+ const toss=()=>{
+  const side=Math.floor(Math.random()*2);
+  const next={color:newColor,side,face:faces[newColor][side]};
+  if(newColor==="black"||newColor==="white"){
+   x.s.coin=null;x.s.special=next;state.held[x.p].push(next);
+   state.effectQueue.push({p:x.p,coin:next});
+  }else{x.s.coin=next;x.s.special=null}
+  log(`黒・裏：${target} ${colors[old]} → ${colors[newColor]}（${next.face}）`);
+  render();
+  modal("黒・裏：コイントス結果",`${target}：${colors[old]}コインを${colors[newColor]}コインに交換しました。\nコイントス結果：${next.face}。\n盤面を確認して「次へ」を押してください。`,[],{label:"次へ",fn:()=>{closeModal();done()}});
+ };
+ modal("黒・裏：交換コインのトス",`${target}の${colors[old]}コインを袋から引いた${colors[newColor]}コインに交換します。\n「コイントス」を押して表裏を決定してください。`,[],{label:"コイントス",fn:toss});
+}}
+else if(coin.side===0){mode="ownswap";allowed=[...slots("human").filter(x=>(x.p===p||!x.s.coin.protected)&&slots("human").filter(y=>y.p===p||!y.s.coin.protected).length>=2),...slots("cpu").filter(x=>(x.p===p||!x.s.coin.protected)&&slots("cpu").filter(y=>y.p===p||!y.s.coin.protected).length>=2)];message="白・表：同じプレイヤーのコイン2個を順にクリックしてください。"}
+else{mode="crossswap";allowed=own.filter(()=>slots(other(p)).some(x=>!x.s.coin.protected));message="白・裏：自分のコインをクリックし、次に相手のコインをクリックしてください。"}
+if(!allowed.length){
+ hideSpecialGuide();
+ const reason=mode==="replace"&&state.coins.length===0
+  ? "交換用のコインが袋に残っていません。"
+  : mode==="ownswap" ? "交換できるコインが同じプレイヤーの場に2個ありません。"
+  : mode==="crossswap" ? "自分と相手の場に交換できるコインが揃っていません。"
+  : "効果を適用できるコインが場にありません。";
+ const msg=`${player(p)}の${colors[coin.color]}コイン（${coin.face}）は効果対象がないため不発です。\n${reason}`;
+ log(msg);
+ cpuNotice("特殊効果は不発です",msg,done);
+ return;
+}
+if(p==="cpu"){
+ let best=null;
+ if(state.cpuLevel==="strong"){
+  const possibilities=cpuEffectTargets(mode,allowed,p);
+  if(possibilities.length){
+   const max=Math.max(...possibilities.map(x=>x.value));
+   best=sample(possibilities.filter(x=>Math.abs(x.value-max)<1e-8));
+  }
+ }
+ let a=best?.a||sample(allowed);
+ const describe=x=>`${player(x.p)}の${positionName(x.i)}（${colors[x.s.coin.color]} ${x.s.coin.face}）`;
+ if(mode==="flip"||mode==="replace"){
+  let target=describe(a);
+  let effect=mode==="flip"?"黒・表：コインを裏返す":"黒・裏：袋のコインと交換してトス";
+  cpuNotice("CPUの特殊効果",`${effect}。対象：${target}`,()=>{
+   log(`CPU特殊効果：${effect}、対象：${target}`);
+   apply(a);if(mode==="flip")done();
+  });
+ }else{
+  let candidates=mode==="ownswap"?slots(a.p).filter(x=>!same(x,a)&&(x.p===p||!x.s.coin.protected)):slots(other(p)).filter(x=>!x.s.coin.protected);
+  let b=best?.b||sample(candidates),targetA=describe(a),targetB=describe(b);
+  let effect=mode==="ownswap"?"白・表：同じプレイヤーの2個を交換":"白・裏：自分と相手の1個ずつを交換";
+  cpuNotice("CPUの特殊効果",`${effect}。対象：${targetA} ⇔ ${targetB}`,()=>{
+   log(`CPU特殊効果：${effect}、対象：${targetA} ⇔ ${targetB}`);
+   swap(a,b);render();done();
+  });
+ }return}
+
+state.phase="effect";state.target={mode,allowed,message,first:null,apply,done,owner:p};render()}
+function finishRound(){
+ log(`${positionName(state.round)}終了（あなた ${score("human")}点 / CPU ${score("cpu")}点）`);
+ let previous=state.round;state.round++;state.cards={};
+ if(state.round===3){
+  state.phase="review";render();
+  beginEffects();
+  return;
+ }
+ state.lead=other(state.lead);state.phase="place";render();advance();
+}
+function showReview(final){
+ $("status").textContent=final?"全6枚のコインを確認してください。":"配置完了。現在の盤面を確認してください。";
+ $("effectHelp").innerHTML="";
+ let b=document.createElement("button");b.className="primary";b.textContent="次の選択へ";
+ b.onclick=()=>{b.remove();if(final)beginEffects();else{state.phase="place";log(`${positionName(state.round)}先手：${player(state.lead)}`);render();advance()}};
+ $("effectHelp").append(b);
+}
+function beginEffects(){
+ if(state.treasureAwardedMatch===state.match)return;
+ let order=[state.lastSecond,other(state.lastSecond)];
+ state.effectQueue=order.flatMap(p=>state.held[p].map(coin=>({p,coin})));
+ log(`特殊効果処理順：${order.map(player).join(" → ")}`);
+ processEffectQueue();
+}
+function processEffectQueue(){
+ if(state.treasureAwardedMatch===state.match)return;
+ if(!state.effectQueue.length){
+  state.phase="done";hideSpecialGuide();render();log("白・黒コイン処理終了");awardTreasure();return;
+ }
+ let {p,coin}=state.effectQueue.shift();
+ if(!state.held[p].includes(coin)){processEffectQueue();return}
+ state.phase="review";render();
+ let description=`${player(p)}の${colors[coin.color]}コイン（${coin.face}）を処理します。`;
+ let run=()=>resolveSpecial(p,coin,()=>{
+  state.phase="review";hideSpecialGuide();render();
+  processEffectQueue();
+ });
+ if(p==="cpu")run();
+ else {log(description);run();}
+}
+function awardTreasure(){
+ // 多重コールバックや二重クリックで同じ勝負のオタカラを重複配布しない。
+ if(!state||state.treasureAwardedMatch===state.match)return;
+ state.treasureAwardedMatch=state.match;
+ let h=score("human"),c=score("cpu"),winners=h===c?["human","cpu"]:[h>c?"human":"cpu"];
+ winners.forEach(p=>state.treasure[p]++);
+ log(`勝負 ${state.match} 結果：あなた ${h}点 / CPU ${c}点。オタカラ：${winners.map(player).join("・")}`);
+ render();
+ let gameWinners=["human","cpu"].filter(p=>state.treasure[p]>=2);
+ let info=`あなた ${h}点 / CPU ${c}点。${winners.map(player).join("・")}がオタカラを1個獲得しました。`;
+ if(gameWinners.length){
+  closeModal();hideSpecialGuide();
+  $("endTitle").textContent=gameWinners.length===2?"引き分け！":gameWinners[0]==="human"?"あなたの勝利！":"CPUの勝利！";
+  $("endMessage").textContent=info;
+  $("endHumanTreasure").textContent=state.treasure.human+"個";
+  $("endCpuTreasure").textContent=state.treasure.cpu+"個";
+  $("endHumanScore").textContent="最終得点："+h+"点";
+  $("endCpuScore").textContent="最終得点："+c+"点";
+  $("endMatchCount").textContent="全"+state.match+"勝負";
+  showScreen("endScreen");
+  return;
+ }
+ modal("勝負終了",info,[],{label:"手札補充へ",fn:nextMatch});
+}
+function drawCards(p,count){
+ for(let i=0;i<count&&state.deck.length;i++)state.hands[p].push(state.deck.pop());
+}
+function nextMatch(){
+ closeModal();hideSpecialGuide();
+ // 予約に使わなかった2枚は手札に残る。山札とチップの使用状況は引き継ぐ。
+ state.phase="replenish";
+ render();
+ const hand=state.hands.human;
+ if(hand.length!==2||state.hands.cpu.length!==2){
+  log("警告：手札枚数が想定と異なります。補充処理を確認してください。");
+ }
+ let choices=[];
+ if(state.deck.length>=3)choices.push({label:"そのまま3枚引く",fn:()=>replenishHuman(false)});
+ if(state.deck.length>=5)choices.push({label:"残り2枚を捨てて5枚引く",fn:()=>replenishHuman(true)});
+ if(!choices.length){insufficientDeck();return}
+ modal("次の勝負：手札補充","残っている手札2枚をそのまま残して3枚引くか、2枚を捨てて5枚引くか選んでください。",choices);
+}
+function replenishHuman(discard){
+ if(discard){
+  let used=state.hands.human.splice(0);
+  log(`あなた：手札${used.map(c=>colors[c]).join("・")}を捨て札にしました`);
+ }
+ drawCards("human",discard?5:3);
+ log(`あなた：${discard?"2枚捨てて5枚引く":"そのまま3枚引く"}を選択`);
+ closeModal();
+ replenishCpu();
+}
+function replenishCpu(){
+ let available=state.deck.length;
+ let discard=available>=5&&Math.random()<0.5;
+ if(available<3){insufficientDeck();return}
+ if(discard){
+  let used=state.hands.cpu.splice(0);
+  log(`CPU：残り手札${used.map(c=>colors[c]).join("・")}を捨てた`);
+ }
+ drawCards("cpu",discard?5:3);
+ let description=discard?"残り2枚を捨てて5枚引きました。":"残り2枚を残して3枚引きました。";
+ log("CPU："+description);
+ render();
+ cpuNotice("CPUの手札補充",description,beginNextMatch);
+}
+function insufficientDeck(){
+ log("未使用予約カードが不足。使用済みカードは再利用しません。");
+ modal("予約カード不足","次の勝負に必要な未使用カードが足りません。使用済みカードは山札に戻しません。",[],{label:"タイトルへ戻る",fn:returnToStart});
+}
+function beginNextMatch(){
+ closeModal();
+ if(state.hands.human.length<5||state.hands.cpu.length<5||state.coins.length<6){
+  modal("コンポーネント不足","次の勝負に必要な手札またはコインが足りません。",[],{label:"タイトルへ戻る",fn:returnToStart});
+  return;
+ }
+ state.match++;
+ state.matchLead=other(state.matchLead);
+ state.lead=state.matchLead;
+ state.round=0;state.cards={};state.boards={human:[null,null,null],cpu:[null,null,null]};
+ state.held={human:[],cpu:[]};
+ state.queue=[];state.effectQueue=[];state.target=null;state.pending=null;state.lastSecond=null;
+ state.phase="place";
+ log(`勝負 ${state.match} 開始。先手：${player(state.lead)}`);
+ render();advance();
+}
+function showEffectPause(){
+ $("status").textContent="特殊効果の処理結果を確認してください。";
+ $("effectHelp").replaceChildren();
+ let b=document.createElement("button");b.className="primary";b.textContent="次の選択へ";
+ b.onclick=()=>{$("effectHelp").replaceChildren();processEffectQueue()};
+ $("effectHelp").append(b);
+}
+
+function openRules(){clearPeek();
+ const table=$("rulesCoinTable");
+ table.innerHTML=Object.entries(faces).map(([k,v])=>`<div class="effect-color ${k}"><strong>${colors[k]}：表 ${v[0]} ／ 裏 ${v[1]}</strong></div>`).join("");
+ $("rulesOverlay").hidden=false;
+ $("closeRulesTop").focus();
+}
+function closeRules(){clearPeek();$("rulesOverlay").hidden=true}
+function clearPeek(){
+ hiddenPopup=null;
+ for(const id of ["modalBackdrop","rulesOverlay","specialGuide"])$(id).classList.remove("peek-hidden");
+ $("restorePopup").hidden=true;
+}
+function peekPopup(kind){
+ clearPeek();
+ const id={modal:"modalBackdrop",rules:"rulesOverlay",guide:"specialGuide"}[kind];
+ if(!id)return;
+ hiddenPopup=kind;
+ $(id).classList.add("peek-hidden");
+ $("restorePopup").hidden=false;
+ $("restorePopup").textContent=kind==="rules"?"ルールを再表示":kind==="guide"?"操作ガイドを再表示":"ポップアップを再表示";
+}
+function restorePopup(){
+ if(!hiddenPopup)return;
+ clearPeek();
+}
+$("temporarilyHideModal").onclick=()=>peekPopup("modal");
+$("temporarilyHideRules").onclick=()=>peekPopup("rules");
+$("temporarilyHideGuide").onclick=()=>peekPopup("guide");
+$("restorePopup").onclick=restorePopup;
+// ルールボタンはHTML側の onclick から呼び出す（iOS Safariでも動作を単純化）
+$("closeRulesTop").onclick=closeRules;
+$("closeRulesBottom").onclick=closeRules;
+$("rulesOverlay").addEventListener("click",e=>{if(e.target===$("rulesOverlay"))closeRules()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("rulesOverlay").hidden)closeRules()});
+$("shareStart").onclick=()=>shareToX(false);$("shareEnd").onclick=()=>shareToX(true);$("restart").onclick=returnToStart;$("restart").textContent="タイトルへ戻る";$("backToStart").onclick=returnToStart;if($("clearLog"))$("clearLog").onclick=()=>{logs=[];$("log").textContent=""};
+try{showScreen("startScreen")}catch(error){console.error("画面初期化エラー",error)}
+</script></body></html>
