@@ -319,7 +319,7 @@ body{max-width:none;padding:0}
 </head><body>
 <noscript><div style="background:#fff0cb;color:#543800;padding:14px;text-align:center">この表示環境ではJavaScriptが無効です。iOSのファイルプレビューではなく、Safariで公開URLを開いてください。</div></noscript>
 <div id="startScreen" class="screen"><div class="screen-panel"><div style="font-size:3.5rem">🪙</div><h1>気まぐれコイン</h1><p>2人用テストプレイ<br>あなた vs CPU</p><div class="cpu-level-select"><strong>CPUの強さ</strong><label><input type="radio" name="cpuLevel" value="weak" checked> 弱CPU（ランダム）</label><label><input type="radio" name="cpuLevel" value="strong"> 強CPU（得点重視）</label></div><p class="muted" style="line-height:1.75">予約カードを使ってコインを争奪し、コイントスで出た目が得点になります。<br><strong style="color:#ffd76a;font-size:1.08em">ただし気まぐれなコインに文字通りコインをひっくり返されちゃうかも。</strong><br>勝負に勝てばオタカラをゲット、2個オタカラをゲットした方が勝利！</p><div class="start-actions"><button id="startGame" type="button" class="primary">ゲーム開始</button><button type="button" class="open-rules">ゲームルール</button><button type="button" id="shareStart" class="share-x">𝕏 で共有</button></div></div></div>
-<div id="endScreen" class="screen" hidden><div class="screen-panel"><div style="font-size:3.5rem">🏆</div><h1 id="endTitle">ゲーム終了</h1><p id="endMessage"></p><div class="result-grid"><div>あなた<strong id="endHumanTreasure">0個</strong><span id="endHumanScore"></span></div><div>CPU<strong id="endCpuTreasure">0個</strong><span id="endCpuScore"></span></div></div><p id="endMatchCount" class="muted"></p><table class="match-history" aria-label="各勝負の得点履歴"><caption>勝負ごとの得点結果</caption><thead><tr><th>勝負</th><th>あなた</th><th>CPU</th><th>オタカラ獲得</th></tr></thead><tbody id="endMatchHistory"></tbody></table><div class="survey-panel"><p><strong>テストプレイアンケートにご協力ください</strong></p><p class="muted">プレイした感想をお聞かせください。</p><a class="survey-link" href="https://forms.cloud.microsoft/r/zfr8TawkBV" target="_blank" rel="noopener noreferrer">アンケートに回答する ↗</a></div><div class="start-actions"><button id="backToStart" class="primary">最初の画面に戻る</button><button type="button" id="shareEnd" class="share-x">𝕏 に結果を共有</button></div></div></div>
+<div id="endScreen" class="screen" hidden><div class="screen-panel"><div style="font-size:3.5rem">🏆</div><h1 id="endTitle">ゲーム終了</h1><p id="endMessage"></p><div class="result-grid"><div>あなた<strong id="endHumanTreasure">0個</strong><span id="endHumanScore"></span></div><div>CPU<strong id="endCpuTreasure">0個</strong><span id="endCpuScore"></span></div></div><p id="endMatchCount" class="muted"></p><table class="match-history" aria-label="各勝負の得点履歴"><caption>勝負ごとの得点結果</caption><thead><tr><th>勝負</th><th>あなた</th><th>CPU</th><th>オタカラ獲得</th></tr></thead><tbody id="endMatchHistory"></tbody></table><div class="survey-panel"><p><strong>テストプレイアンケートにご協力ください</strong></p><p class="muted">プレイした感想をお聞かせください。</p><a class="survey-link" href="https://forms.cloud.microsoft/r/zfr8TawkBV" target="_blank" rel="noopener noreferrer">アンケートに回答する ↗</a></div><div style="margin:12px 0"><p id="telemetrySendStatus" role="status" aria-live="polite" style="font-size:.82rem;color:#174a8b">プレイデータはゲーム終了時に自動送信されます</p><button type="button" id="retryTelemetryEnd">未送信データを再送信</button></div><div style="margin:14px 0"><button type="button" id="exportTelemetryEnd" class="primary" style="width:100%;min-height:46px">📥 プレイデータ(JSON)を保存</button><p class="muted" style="font-size:.8rem;margin:6px 0">今回の対戦記録をダウンロードします</p></div><div class="start-actions"><button id="backToStart" class="primary">最初の画面に戻る</button><button type="button" id="shareEnd" class="share-x">𝕏 に結果を共有</button></div></div></div>
 <div id="gameScreen" hidden>
 <header class="bar"><div><h1>🪙 気まぐれコイン — Section 6 コンパクト画面版</h1><p class="muted">予約 → コイントス → チップ判断 → 特殊効果 → オタカラ判定</p></div><div class="header-actions"><button type="button" class="open-rules">ゲームルール</button><button id="restart">新しいゲーム</button></div></header>
 <div class="dashboard-col dash-left"><section class="panel"><div class="bar"><div id="progress"></div><div id="stock"></div></div><p id="status" class="status"></p><div id="effectHelp"></div></section><section class="panel coin-reference-panel"><h2>コイン早見表・残数</h2><div id="stockSummary"></div><div class="effect" id="effects"></div><div id="inventory" class="inventory"></div><details class="debug-details"><summary>デバッグログ・計測データ</summary><button type="button" id="exportTelemetry" style="margin:5px 0">プレイデータ(JSON)を保存</button><pre id="log"></pre></details></section></div>
@@ -359,7 +359,7 @@ const $=id=>document.getElementById(id),other=p=>p==="human"?"cpu":"human",playe
 const sample=a=>a[Math.floor(Math.random()*a.length)];
 let state,logs=[],modalNext=null;
 let hiddenPopup=null;
-// Section: 匿名テストプレイ計測（この版ではブラウザ内のみ。外部送信しない）
+// Section: 匿名テストプレイ計測（完了時にEdge Functionへ送信）
 const TELEMETRY_VERSION="1.0";
 let telemetry=null;
 function trackEvent(type,details={}){
@@ -374,6 +374,7 @@ function finishTelemetry(winners){
  if(!telemetry||telemetry.status==="completed")return;
  trackEvent("game_end",{winners,treasure:{...state.treasure},matches:state.results.length,duration_ms:Math.round(performance.now()-telemetry.startedAt)});
  telemetry.status="completed";telemetry.ended_at=new Date().toISOString();
+ queueCompletedTelemetry();
 }
 function exportTelemetry(){
  if(!telemetry){alert("記録対象のプレイデータがありません。");return}
@@ -381,6 +382,62 @@ function exportTelemetry(){
  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
  const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`kimagure-telemetry-${data.session_id}.json`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
+
+// Section 3: 完了したプレイログをSupabaseへ送信（秘密鍵はブラウザに置かない）
+const TELEMETRY_ENDPOINT="https://wykvoyjmonqapcaadwdu.supabase.co/functions/v1/swift-function";
+const TELEMETRY_QUEUE_KEY="kimagure-telemetry-pending-v1";
+let telemetrySending=false;
+function telemetrySnapshot(){
+ if(!telemetry||telemetry.status!=="completed")return null;
+ const {startedAt,...data}=telemetry;
+ return data;
+}
+function pendingTelemetry(){
+ try{const x=JSON.parse(localStorage.getItem(TELEMETRY_QUEUE_KEY)||"null");return x&&x.event_type==="game_completed"?x:null}
+ catch{return null}
+}
+function setTelemetryStatus(message){
+ const el=$("telemetrySendStatus");if(el)el.textContent=message;
+}
+function savePendingTelemetry(payload){
+ try{localStorage.setItem(TELEMETRY_QUEUE_KEY,JSON.stringify(payload));return true}
+ catch(e){console.warn("プレイログの一時保存に失敗",e);return false}
+}
+async function sendPendingTelemetry(){
+ if(telemetrySending)return;
+ const payload=pendingTelemetry();
+ if(!payload){setTelemetryStatus("送信待ちのデータはありません");return}
+ if(!navigator.onLine){setTelemetryStatus("オフラインのため送信待ちです。接続後に再送できます");return}
+ telemetrySending=true;
+ setTelemetryStatus("プレイデータを送信しています…");
+ const controller=new AbortController();
+ const timeout=setTimeout(()=>controller.abort(),12000);
+ try{
+  const response=await fetch(TELEMETRY_ENDPOINT,{
+   method:"POST",headers:{"Content-Type":"application/json"},
+   body:JSON.stringify(payload),signal:controller.signal,mode:"cors",cache:"no-store"
+  });
+  const result=await response.json().catch(()=>null);
+  if(!response.ok||result?.success!==true)throw new Error(`HTTP ${response.status}${result?.error?" / "+result.error:""}`);
+  // 再送中に新しいログが保存されていたら消さない
+  if(pendingTelemetry()?.telemetry?.session_id===payload.telemetry.session_id){
+   localStorage.removeItem(TELEMETRY_QUEUE_KEY);
+  }
+  setTelemetryStatus("✓ Supabaseへの保存が完了しました");
+  console.info("プレイデータ送信成功",payload.telemetry.session_id,result);
+ }catch(e){
+  setTelemetryStatus("送信できませんでした。記録は端末に保持されています。「再送信」を押してください");
+  console.warn("プレイデータ送信失敗",e);
+ }finally{clearTimeout(timeout);telemetrySending=false}
+}
+function queueCompletedTelemetry(){
+ const data=telemetrySnapshot();if(!data)return;
+ if(!savePendingTelemetry({event_type:"game_completed",telemetry:data})){
+  setTelemetryStatus("端末への一時保存に失敗しました。JSONを手動保存してください");return;
+ }
+ void sendPendingTelemetry();
+}
+window.addEventListener("online",()=>{if(pendingTelemetry())void sendPendingTelemetry()});
 
 function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function bag(o){return shuffle(Object.entries(o).flatMap(([k,n])=>Array(n).fill(k)))}
@@ -923,6 +980,9 @@ $("closeRulesBottom").onclick=closeRules;
 $("rulesOverlay").addEventListener("click",e=>{if(e.target===$("rulesOverlay"))closeRules()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("rulesOverlay").hidden)closeRules()});
 $("exportTelemetry").onclick=exportTelemetry;
+$("exportTelemetryEnd").onclick=exportTelemetry;
+$("retryTelemetryEnd").onclick=()=>void sendPendingTelemetry();
+if(pendingTelemetry())void sendPendingTelemetry();
 $("shareStart").onclick=()=>shareToX(false);$("shareEnd").onclick=()=>shareToX(true);$("restart").onclick=returnToStart;$("restart").textContent="タイトルへ戻る";$("backToStart").onclick=returnToStart;if($("clearLog"))$("clearLog").onclick=()=>{logs=[];$("log").textContent=""};
 try{showScreen("startScreen")}catch(error){console.error("画面初期化エラー",error)}
 </script></body></html>
