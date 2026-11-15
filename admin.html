@@ -12,7 +12,7 @@
 <body>
 <header><h1>🪙 気まぐれコイン｜管理者ダッシュボード</h1><button id="logout" class="secondary hidden">ログアウト</button></header>
 <main>
-<section id="setup" class="panel login hidden"><h2>初期設定が必要です</h2><p>このHTML内の <code>sb_publishable_uCkzhLREeR1oiSAHRwev8g_R7KSEaba</code> をSupabaseの公開用キーに置き換えてください。</p><p class="muted">service_roleキーやsecretキーは絶対に設定しないでください。</p></section>
+<section id="setup" class="panel login hidden"><h2>初期設定が必要です</h2><p>このHTML内の <code>SUPABASE_PUBLISHABLE_KEY</code> をSupabaseの公開用キーに置き換えてください。</p><p class="muted">service_roleキーやsecretキーは絶対に設定しないでください。</p></section>
 <section id="login" class="panel login hidden"><h2>管理者ログイン</h2><form id="loginForm"><label for="email">メールアドレス</label><input id="email" type="email" autocomplete="username" required><label for="password">パスワード</label><input id="password" type="password" autocomplete="current-password" required><p><button id="loginBtn" type="submit">ログイン</button></p></form><p id="loginError" class="error" role="alert"></p></section>
 <section id="dashboard" class="hidden"><div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><h2>基本統計</h2><div id="updated" class="muted"></div></div><button id="refresh" class="secondary">更新</button></div><p id="status" role="status"></p><div class="metrics"><div class="metric"><div class="label">完了ゲーム数</div><div id="total" class="value">—</div></div><div class="metric"><div class="label">プレイヤー勝率</div><div id="winRate" class="value">—</div></div><div class="metric"><div class="label">平均プレイ時間</div><div id="duration" class="value">—</div></div><div class="metric"><div class="label">平均勝負数</div><div id="matches" class="value">—</div></div></div></div>
 <div class="two"><section class="panel"><h2>CPU難易度別</h2><div id="difficulty"></div></section><section class="panel"><h2>勝敗内訳</h2><div id="winners"></div></section></div>
@@ -22,7 +22,7 @@
 <script type="module">
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const SUPABASE_URL = 'https://wykvoyjmohqapcaadwdu.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'PASTE_YOUR_SUPABASE_PUBLISHABLE_OR_ANON_KEY_HERE';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_uCkzhLREeR1oiSAHRwev8g_R7KSEaba';
 const $ = (id) => document.getElementById(id);
 const show = (id, yes) => $(id).classList.toggle('hidden', !yes);
 const configured = SUPABASE_PUBLISHABLE_KEY !== 'PASTE_YOUR_SUPABASE_PUBLISHABLE_OR_ANON_KEY_HERE';
