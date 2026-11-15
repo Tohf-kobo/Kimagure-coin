@@ -316,13 +316,17 @@ body{max-width:none;padding:0}
 @media(max-width:849px){#gameScreen .board-score{min-height:47px;padding:2px 4px}#gameScreen .board-score span{font-size:.65rem}#gameScreen .board-score strong{font-size:clamp(1.5rem,6vw,2.25rem)}}
 @media(max-height:760px) and (min-width:850px){#gameScreen .board-score{min-height:48px;padding:2px 4px}#gameScreen .board-score strong{font-size:2rem}}
 </style>
-</head><body>
+<style id="public-release-style">
+.creator-link{display:inline-flex;align-items:center;justify-content:center;gap:7px;margin-top:18px;padding:8px 13px;border:1px solid #cbd5e1;border-radius:999px;color:#244a85;text-decoration:none;font-size:.9rem;font-weight:700;background:#f8fafc}
+.creator-link:hover,.creator-link:focus-visible{background:#eaf2ff;border-color:#7ca2d5;text-decoration:underline}
+.data-notice{font-size:.75rem;color:#64748b;margin-top:12px;line-height:1.55}
+</style></head><body>
 <noscript><div style="background:#fff0cb;color:#543800;padding:14px;text-align:center">この表示環境ではJavaScriptが無効です。iOSのファイルプレビューではなく、Safariで公開URLを開いてください。</div></noscript>
-<div id="startScreen" class="screen"><div class="screen-panel"><div style="font-size:3.5rem">🪙</div><h1>気まぐれコイン</h1><p>2人用テストプレイ<br>あなた vs CPU</p><div class="cpu-level-select"><strong>CPUの強さ</strong><label><input type="radio" name="cpuLevel" value="weak" checked> 弱CPU（ランダム）</label><label><input type="radio" name="cpuLevel" value="strong"> 強CPU（得点重視）</label></div><p class="muted" style="line-height:1.75">予約カードを使ってコインを争奪し、コイントスで出た目が得点になります。<br><strong style="color:#ffd76a;font-size:1.08em">ただし気まぐれなコインに文字通りコインをひっくり返されちゃうかも。</strong><br>勝負に勝てばオタカラをゲット、2個オタカラをゲットした方が勝利！</p><div class="start-actions"><button id="startGame" type="button" class="primary">ゲーム開始</button><button type="button" class="open-rules">ゲームルール</button><button type="button" id="shareStart" class="share-x">𝕏 で共有</button></div></div></div>
-<div id="endScreen" class="screen" hidden><div class="screen-panel"><div style="font-size:3.5rem">🏆</div><h1 id="endTitle">ゲーム終了</h1><p id="endMessage"></p><div class="result-grid"><div>あなた<strong id="endHumanTreasure">0個</strong><span id="endHumanScore"></span></div><div>CPU<strong id="endCpuTreasure">0個</strong><span id="endCpuScore"></span></div></div><p id="endMatchCount" class="muted"></p><table class="match-history" aria-label="各勝負の得点履歴"><caption>勝負ごとの得点結果</caption><thead><tr><th>勝負</th><th>あなた</th><th>CPU</th><th>オタカラ獲得</th></tr></thead><tbody id="endMatchHistory"></tbody></table><div class="survey-panel"><p><strong>テストプレイアンケートにご協力ください</strong></p><p class="muted">プレイした感想をお聞かせください。</p><a class="survey-link" href="https://forms.cloud.microsoft/r/zfr8TawkBV" target="_blank" rel="noopener noreferrer">アンケートに回答する ↗</a></div><div style="margin:12px 0"><p id="telemetrySendStatus" role="status" aria-live="polite" style="font-size:.82rem;color:#174a8b">プレイデータはゲーム終了時に自動送信されます</p><button type="button" id="retryTelemetryEnd">未送信データを再送信</button></div><div style="margin:14px 0"><button type="button" id="exportTelemetryEnd" class="primary" style="width:100%;min-height:46px">📥 プレイデータ(JSON)を保存</button><p class="muted" style="font-size:.8rem;margin:6px 0">今回の対戦記録をダウンロードします</p></div><div class="start-actions"><button id="backToStart" class="primary">最初の画面に戻る</button><button type="button" id="shareEnd" class="share-x">𝕏 に結果を共有</button></div></div></div>
+<div id="startScreen" class="screen"><div class="screen-panel"><div style="font-size:3.5rem">🪙</div><h1>気まぐれコイン</h1><p>2人用テストプレイ<br>あなた vs CPU</p><div class="cpu-level-select"><strong>CPUの強さ</strong><label><input type="radio" name="cpuLevel" value="weak" checked> 弱CPU（ランダム）</label><label><input type="radio" name="cpuLevel" value="strong"> 強CPU（得点重視）</label></div><p class="muted" style="line-height:1.75">予約カードを使ってコインを争奪し、コイントスで出た目が得点になります。<br><strong style="color:#ffd76a;font-size:1.08em">ただし気まぐれなコインに文字通りコインをひっくり返されちゃうかも。</strong><br>勝負に勝てばオタカラをゲット、2個オタカラをゲットした方が勝利！</p><div class="start-actions"><button id="startGame" type="button" class="primary">ゲーム開始</button><button type="button" class="open-rules">ゲームルール</button><button type="button" id="shareStart" class="share-x">𝕏 で共有</button></div><a class="creator-link" href="https://x.com/Tohf_chan" target="_blank" rel="noopener noreferrer" aria-label="制作者のXアカウント @Tohf_chan を開く">𝕏 制作者：@Tohf_chan ↗</a><p class="data-notice">ゲームの改善のため、匿名のプレイ記録を自動収集しています。</p></div></div>
+<div id="endScreen" class="screen" hidden><div class="screen-panel"><div style="font-size:3.5rem">🏆</div><h1 id="endTitle">ゲーム終了</h1><p id="endMessage"></p><div class="result-grid"><div>あなた<strong id="endHumanTreasure">0個</strong><span id="endHumanScore"></span></div><div>CPU<strong id="endCpuTreasure">0個</strong><span id="endCpuScore"></span></div></div><p id="endMatchCount" class="muted"></p><table class="match-history" aria-label="各勝負の得点履歴"><caption>勝負ごとの得点結果</caption><thead><tr><th>勝負</th><th>あなた</th><th>CPU</th><th>オタカラ獲得</th></tr></thead><tbody id="endMatchHistory"></tbody></table><div class="survey-panel"><p><strong>テストプレイアンケートにご協力ください</strong></p><p class="muted">プレイした感想をお聞かせください。</p><a class="survey-link" href="https://forms.cloud.microsoft/r/zfr8TawkBV" target="_blank" rel="noopener noreferrer">アンケートに回答する ↗</a></div><div class="start-actions"><button id="backToStart" class="primary">最初の画面に戻る</button><button type="button" id="shareEnd" class="share-x">𝕏 に結果を共有</button></div><a class="creator-link" href="https://x.com/Tohf_chan" target="_blank" rel="noopener noreferrer" aria-label="制作者のXアカウント @Tohf_chan を開く">𝕏 制作者：@Tohf_chan ↗</a></div></div>
 <div id="gameScreen" hidden>
 <header class="bar"><div><h1>🪙 気まぐれコイン — Section 6 コンパクト画面版</h1><p class="muted">予約 → コイントス → チップ判断 → 特殊効果 → オタカラ判定</p></div><div class="header-actions"><button type="button" class="open-rules">ゲームルール</button><button id="restart">新しいゲーム</button></div></header>
-<div class="dashboard-col dash-left"><section class="panel"><div class="bar"><div id="progress"></div><div id="stock"></div></div><p id="status" class="status"></p><div id="effectHelp"></div></section><section class="panel coin-reference-panel"><h2>コイン早見表・残数</h2><div id="stockSummary"></div><div class="effect" id="effects"></div><div id="inventory" class="inventory"></div><details class="debug-details"><summary>デバッグログ・計測データ</summary><button type="button" id="exportTelemetry" style="margin:5px 0">プレイデータ(JSON)を保存</button><pre id="log"></pre></details></section></div>
+<div class="dashboard-col dash-left"><section class="panel"><div class="bar"><div id="progress"></div><div id="stock"></div></div><p id="status" class="status"></p><div id="effectHelp"></div></section><section class="panel coin-reference-panel"><h2>コイン早見表・残数</h2><div id="stockSummary"></div><div class="effect" id="effects"></div><div id="inventory" class="inventory"></div></section></div>
 <div class="dashboard-col dash-center"><section class="panel"><h2>CPUの手元（白・黒コイン）</h2><div id="held-cpu" class="hand"></div></section><section class="panel board-panel"><div class="board-score board-score-cpu"><span>CPUの暫定スコア</span><strong id="cpuScore">0点</strong></div><h2>CPUの場</h2><div id="cpuBoard" class="board"></div><hr class="divider"><h2>あなたの場</h2><div id="humanBoard" class="board"></div><div class="board-score board-score-human"><span>あなたの暫定スコア</span><strong id="humanScore">0点</strong></div></section><section class="panel"><h2>あなたの手元（白・黒コイン）</h2><div id="held-human" class="hand"></div></section></div>
 <div class="dashboard-col dash-right">
 <section class="panel player-info cpu-info"><h2>相手プレイヤー（CPU）</h2><div id="cpuInfo" class="player-info-top"></div><h3>相手の手札 <span id="cpuHandCount"></span></h3><div id="cpuHand" class="hand"></div></section>
@@ -406,7 +410,7 @@ function savePendingTelemetry(payload){
 async function sendPendingTelemetry(){
  if(telemetrySending)return;
  const payload=pendingTelemetry();
- if(!payload){setTelemetryStatus("送信待ちのデータはありません");return}
+ if(!payload){return}
  if(!navigator.onLine){setTelemetryStatus("オフラインのため送信待ちです。接続後に再送できます");return}
  telemetrySending=true;
  setTelemetryStatus("プレイデータを送信しています…");
@@ -426,14 +430,14 @@ async function sendPendingTelemetry(){
   setTelemetryStatus("✓ Supabaseへの保存が完了しました");
   console.info("プレイデータ送信成功",payload.telemetry.session_id,result);
  }catch(e){
-  setTelemetryStatus("送信できませんでした。記録は端末に保持されています。「再送信」を押してください");
+  setTelemetryStatus("送信できませんでした。記録は端末に保持されています。通信が回復した際に再送を試みます");
   console.warn("プレイデータ送信失敗",e);
  }finally{clearTimeout(timeout);telemetrySending=false}
 }
 function queueCompletedTelemetry(){
  const data=telemetrySnapshot();if(!data)return;
  if(!savePendingTelemetry({event_type:"game_completed",telemetry:data})){
-  setTelemetryStatus("端末への一時保存に失敗しました。JSONを手動保存してください");return;
+  setTelemetryStatus("端末への一時保存に失敗しました。次のプレイ時に通信状態をご確認ください");return;
  }
  void sendPendingTelemetry();
 }
@@ -979,9 +983,6 @@ $("closeRulesTop").onclick=closeRules;
 $("closeRulesBottom").onclick=closeRules;
 $("rulesOverlay").addEventListener("click",e=>{if(e.target===$("rulesOverlay"))closeRules()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("rulesOverlay").hidden)closeRules()});
-$("exportTelemetry").onclick=exportTelemetry;
-$("exportTelemetryEnd").onclick=exportTelemetry;
-$("retryTelemetryEnd").onclick=()=>void sendPendingTelemetry();
 if(pendingTelemetry())void sendPendingTelemetry();
 $("shareStart").onclick=()=>shareToX(false);$("shareEnd").onclick=()=>shareToX(true);$("restart").onclick=returnToStart;$("restart").textContent="タイトルへ戻る";$("backToStart").onclick=returnToStart;if($("clearLog"))$("clearLog").onclick=()=>{logs=[];$("log").textContent=""};
 try{showScreen("startScreen")}catch(error){console.error("画面初期化エラー",error)}
