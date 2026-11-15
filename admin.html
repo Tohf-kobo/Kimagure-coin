@@ -7,6 +7,7 @@
 <title>気まぐれコイン｜管理者ダッシュボード</title>
 <style>
 :root{font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;color:#253047;background:#f5f7fb}*{box-sizing:border-box}body{margin:0}header{background:#18243b;color:white;padding:20px max(20px,calc((100vw - 1080px)/2));display:flex;align-items:center;justify-content:space-between;gap:12px}h1{font-size:21px;margin:0}h2{font-size:18px;margin:0 0 16px}main{max-width:1080px;margin:30px auto;padding:0 20px}.panel{background:white;border:1px solid #e2e7f0;border-radius:15px;padding:24px;margin-bottom:20px;box-shadow:0 4px 20px #19243b08}.login{max-width:440px;margin:60px auto}label{display:block;font-weight:600;font-size:14px;margin:14px 0 6px}input{width:100%;padding:12px;border:1px solid #cbd4e2;border-radius:8px;font:inherit}button{border:0;border-radius:9px;padding:11px 17px;background:#315bb7;color:white;font:inherit;font-weight:600;cursor:pointer}button:disabled{opacity:.5;cursor:wait}.secondary{background:#e8edf5;color:#253047}.muted{color:#637086}.error{color:#b52a3d}.ok{color:#16734b}.hidden{display:none!important}.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.metric{padding:20px;border-radius:13px;background:#f4f7fc}.metric .value{font-size:30px;font-weight:750;margin-top:8px}.metric .label{font-size:13px;color:#64728b}.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}.bar-row{display:grid;grid-template-columns:85px 1fr 90px;align-items:center;gap:12px;margin:12px 0}.track{background:#e6ebf4;height:13px;border-radius:20px;overflow:hidden}.fill{height:100%;background:#416cbe;border-radius:20px}table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:12px 9px;text-align:left;border-bottom:1px solid #e9edf4}th{color:#64728b;font-weight:600} .table-scroll{overflow:auto}#status{min-height:20px}footer{color:#64728b;text-align:center;font-size:12px;padding:22px}@media(max-width:800px){.metrics{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}}@media(max-width:450px){.metrics{grid-template-columns:1fr 1fr}.metric{padding:12px}.metric .value{font-size:23px}header{flex-wrap:wrap}}
+ .detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}.detail-grid .panel{margin-bottom:0}.note{font-size:13px;color:#64728b;line-height:1.7}.detail-section{margin-top:20px}.summary-line{margin:8px 0;font-size:14px}.small-title{font-weight:700;margin:18px 0 8px}@media(max-width:800px){.detail-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -17,7 +18,7 @@
 <section id="dashboard" class="hidden"><div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><h2>基本統計</h2><div id="updated" class="muted"></div></div><button id="refresh" class="secondary">更新</button></div><p id="status" role="status"></p><div class="metrics"><div class="metric"><div class="label">完了ゲーム数</div><div id="total" class="value">—</div></div><div class="metric"><div class="label">プレイヤー勝率</div><div id="winRate" class="value">—</div></div><div class="metric"><div class="label">平均プレイ時間</div><div id="duration" class="value">—</div></div><div class="metric"><div class="label">平均勝負数</div><div id="matches" class="value">—</div></div></div></div>
 <div class="two"><section class="panel"><h2>CPU難易度別</h2><div id="difficulty"></div></section><section class="panel"><h2>勝敗内訳</h2><div id="winners"></div></section></div>
 <section class="panel"><h2>最近のプレイ履歴（最大20件）</h2><div class="table-scroll"><table><thead><tr><th>終了日時</th><th>CPU</th><th>勝者</th><th>勝負数</th><th>所要時間</th></tr></thead><tbody id="recent"></tbody></table></div></section>
-<p class="muted">集計対象：保存済みの完了ゲーム。匿名プレイのため、個人を特定する情報は表示しません。</p></section>
+<section class="panel detail-section"><h2>プレイ行動の詳細分析</h2><p id="detailStatus" class="note">行動履歴を読み込みます。</p><div class="detail-grid"><section class="panel"><h2>予約カードの使用回数</h2><div id="reservationBars"></div><p class="small-title">プレイヤー別の使用回数</p><div id="reservationPlayers"></div><p id="randomRate" class="summary-line"></p></section><section class="panel"><h2>コインの取得回数</h2><div id="coinBars"></div><p class="small-title">トス結果（記録された初回トス）</p><div id="tossStats"></div></section><section class="panel"><h2>幸運チップ</h2><div id="chipStats"></div><p class="note">振り直しの結果や防御の成功率は、現在の記録だけでは厳密に判定できません。</p></section><section class="panel"><h2>黒白コインの使用率</h2><div id="specialStats"></div><p class="note">全コイン取得回数に対する黒・白コインの取得割合です。逆転成功率や特殊効果の成否は集計しません。</p></section></div></section><p class="muted">集計対象：保存済みの完了ゲーム。匿名プレイのため、個人を特定する情報は表示しません。</p></section>
 </main><footer>管理者専用・Supabase Auth + Row Level Security</footer>
 <script type="module">
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -53,6 +54,68 @@ if (configured) {
     const {data,error}=await db.from('admin_users').select('user_id').eq('user_id',user.id).maybeSingle();
     if(error) throw new Error('管理者権限を確認できません。RLS設定を確認してください。');
     return !!data;
+  }
+  const labels = {red:'赤',blue:'青',yellow:'黄',green:'緑',gold:'金',black:'黒',white:'白',brown:'茶',random:'ランダム',dummy:'代用'};
+  const named = x => labels[x] || String(x || '不明');
+  const countBy = (rows, fn) => {
+    const counts = new Map();
+    for (const row of rows) { const k=fn(row);counts.set(k,(counts.get(k)||0)+1); }
+    return [...counts.entries()].sort((a,b)=>b[1]-a[1]);
+  };
+  const renderCounts = (id, entries) => {
+    const total=entries.reduce((n,x)=>n+x[1],0);
+    if (!entries.length) { text(id,'記録なし');return; }
+    bars(id,entries.map(([label,count])=>({label,count,total})));
+  };
+  const renderLines = (id, entries) => {
+    const root=$(id);root.replaceChildren();
+    if (!entries.length) {root.textContent='記録なし';return;}
+    for (const [label,count] of entries) {
+      const p=document.createElement('p');p.className='summary-line';p.textContent=`${label}：${count}回`;root.append(p);
+    }
+  };
+  async function loadDetails(sessions) {
+    const ids=sessions.map(s=>s.id);
+    if (!ids.length) {text('detailStatus','完了ゲームがありません。');return;}
+    const events=[];
+    // Query in batches to avoid URL-length limits and Supabase's default 1000-row cap.
+    for (let i=0;i<ids.length;i+=30) {
+      const batch=ids.slice(i,i+30);
+      for (let offset=0;;offset+=500) {
+        const {data,error}=await db.from('game_events')
+          .select('session_id,match_number,sequence_number,event_type,event_data')
+          .in('session_id',batch).order('session_id',{ascending:true})
+          .order('sequence_number',{ascending:true}).range(offset,offset+499);
+        if(error) throw error;
+        events.push(...(data||[]));
+        if(!data||data.length<500)break;
+        if(offset>=99500)throw new Error('イベント件数が表示上限を超えました。');
+      }
+    }
+    const get=(type)=>events.filter(e=>e.event_type===type).map(e=>e.event_data||{});
+    const reservations=get('reservation_play');
+    renderCounts('reservationBars',countBy(reservations,e=>named(e.card)));
+    renderLines('reservationPlayers',countBy(reservations,e=>e.player==='human'?'プレイヤー':'CPU'));
+    const acquired=get('coin_acquire');
+    const random=acquired.filter(e=>e.random_choice===true).length;
+    text('randomRate',`候補から選択した取得：${random}/${acquired.length}回（${percentage(random,acquired.length)}）※ランダムカード以外の在庫切れも含む`);
+    renderCounts('coinBars',countBy(acquired,e=>named(e.coin)));
+    const toss=get('coin_toss');
+    const heads=toss.filter(e=>e.side===1).length;
+    const tails=toss.filter(e=>e.side===0).length;
+    renderLines('tossStats',[['side=0',tails],['side=1',heads]]);
+    const chips=get('chip_use');
+    renderLines('chipStats',countBy(chips,e=>`${e.player==='human'?'プレイヤー':'CPU'}・${e.action==='reroll'?'振り直し':e.action==='defend'?'防御':String(e.action)}`));
+    const black=acquired.filter(e=>e.coin==='black').length;
+    const white=acquired.filter(e=>e.coin==='white').length;
+    const coinTotal=acquired.length;
+    const specialRoot=$('specialStats');specialRoot.replaceChildren();
+    for (const [label,count] of [['黒コイン',black],['白コイン',white],['黒白合計',black+white]]) {
+      const line=document.createElement('p');line.className='summary-line';
+      line.textContent=`${label}：${count}回 / ${coinTotal}回（${percentage(count,coinTotal)}）`;
+      specialRoot.append(line);
+    }
+    text('detailStatus',`分析対象：${ids.length}ゲーム、${events.length}件の行動履歴`);
   }
   async function loadStats() {
     if (loading || !activeUser) return;
@@ -104,6 +167,7 @@ if (configured) {
       }
       text('updated',`更新日時：${new Date().toLocaleString('ja-JP')}`);
       text('status',total===0?'まだ完了ゲームのデータがありません。':'');
+      try { await loadDetails(all); } catch(detailError) { console.error('Details load failed',detailError);text('detailStatus','行動履歴を読み込めませんでした。'); }
     } catch(err) {
       console.error('Statistics load failed',err);
       text('status','統計を読み込めませんでした。管理者権限とRLSポリシーを確認してください。');
