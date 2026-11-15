@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>気まぐれコイン｜管理者ダッシュボード</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;color:#253047;background:#f5f7fb}*{box-sizing:border-box}body{margin:0}header{background:#18243b;color:white;padding:20px max(20px,calc((100vw - 1080px)/2));display:flex;align-items:center;justify-content:space-between;gap:12px}h1{font-size:21px;margin:0}h2{font-size:18px;margin:0 0 16px}main{max-width:1080px;margin:30px auto;padding:0 20px}.panel{background:white;border:1px solid #e2e7f0;border-radius:15px;padding:24px;margin-bottom:20px;box-shadow:0 4px 20px #19243b08}.login{max-width:440px;margin:60px auto}label{display:block;font-weight:600;font-size:14px;margin:14px 0 6px}input{width:100%;padding:12px;border:1px solid #cbd4e2;border-radius:8px;font:inherit}button{border:0;border-radius:9px;padding:11px 17px;background:#315bb7;color:white;font:inherit;font-weight:600;cursor:pointer}button:disabled{opacity:.5;cursor:wait}.secondary{background:#e8edf5;color:#253047}.muted{color:#637086}.error{color:#b52a3d}.ok{color:#16734b}.hidden{display:none!important}.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.metric{padding:20px;border-radius:13px;background:#f4f7fc}.metric .value{font-size:30px;font-weight:750;margin-top:8px}.metric .label{font-size:13px;color:#64728b}.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}.bar-row{display:grid;grid-template-columns:85px 1fr 90px;align-items:center;gap:12px;margin:12px 0}.track{background:#e6ebf4;height:13px;border-radius:20px;overflow:hidden}.fill{height:100%;background:#416cbe;border-radius:20px}table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:12px 9px;text-align:left;border-bottom:1px solid #e9edf4}th{color:#64728b;font-weight:600} .table-scroll{overflow:auto}#status{min-height:20px}footer{color:#64728b;text-align:center;font-size:12px;padding:22px}@media(max-width:800px){.metrics{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}}@media(max-width:450px){.metrics{grid-template-columns:1fr 1fr}.metric{padding:12px}.metric .value{font-size:23px}header{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<header><h1>🪙 気まぐれコイン｜管理者ダッシュボード</h1><button id="logout" class="secondary hidden">ログアウト</button></header>
+<main>
+<section id="setup" class="panel login hidden"><h2>初期設定が必要です</h2><p>このHTML内の <code>sb_publishable_uCkzhLREeR1oiSAHRwev8g_R7KSEaba</code> をSupabaseの公開用キーに置き換えてください。</p><p class="muted">service_roleキーやsecretキーは絶対に設定しないでください。</p></section>
+<section id="login" class="panel login hidden"><h2>管理者ログイン</h2><form id="loginForm"><label for="email">メールアドレス</label><input id="email" type="email" autocomplete="username" required><label for="password">パスワード</label><input id="password" type="password" autocomplete="current-password" required><p><button id="loginBtn" type="submit">ログイン</button></p></form><p id="loginError" class="error" role="alert"></p></section>
+<section id="dashboard" class="hidden"><div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><h2>基本統計</h2><div id="updated" class="muted"></div></div><button id="refresh" class="secondary">更新</button></div><p id="status" role="status"></p><div class="metrics"><div class="metric"><div class="label">完了ゲーム数</div><div id="total" class="value">—</div></div><div class="metric"><div class="label">プレイヤー勝率</div><div id="winRate" class="value">—</div></div><div class="metric"><div class="label">平均プレイ時間</div><div id="duration" class="value">—</div></div><div class="metric"><div class="label">平均勝負数</div><div id="matches" class="value">—</div></div></div></div>
+<div class="two"><section class="panel"><h2>CPU難易度別</h2><div id="difficulty"></div></section><section class="panel"><h2>勝敗内訳</h2><div id="winners"></div></section></div>
+<section class="panel"><h2>最近のプレイ履歴（最大20件）</h2><div class="table-scroll"><table><thead><tr><th>終了日時</th><th>CPU</th><th>勝者</th><th>勝負数</th><th>所要時間</th></tr></thead><tbody id="recent"></tbody></table></div></section>
+<p class="muted">集計対象：保存済みの完了ゲーム。匿名プレイのため、個人を特定する情報は表示しません。</p></section>
+</main><footer>管理者専用・Supabase Auth + Row Level Security</footer>
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+const SUPABASE_URL = 'https://wykvoyjmohqapcaadwdu.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'PASTE_YOUR_SUPABASE_PUBLISHABLE_OR_ANON_KEY_HERE';
+const $ = (id) => document.getElementById(id);
+const show = (id, yes) => $(id).classList.toggle('hidden', !yes);
+const configured = SUPABASE_PUBLISHABLE_KEY !== 'PASTE_YOUR_SUPABASE_PUBLISHABLE_OR_ANON_KEY_HERE';
+show('setup', !configured);
+if (configured) {
+  const db = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {auth:{persistSession:true,autoRefreshToken:true}});
+  let activeUser = null;
+  let loading = false;
+  const text = (id, value) => { $(id).textContent = String(value); };
+  const percentage = (n,d) => d ? `${(100*n/d).toFixed(1)}%` : '—';
+  const minutes = (ms) => Number.isFinite(ms) && ms >= 0 ? `${(ms/60000).toFixed(1)}分` : '—';
+  const fmtDate = (v) => v ? new Date(v).toLocaleString('ja-JP') : '—';
+  function bars(containerId, items) {
+    const root = $(containerId); root.replaceChildren();
+    for (const {label,count,total} of items) {
+      const row = document.createElement('div'); row.className='bar-row';
+      const name=document.createElement('span'); name.textContent=label;
+      const track=document.createElement('div'); track.className='track';
+      const fill=document.createElement('div'); fill.className='fill';
+      fill.style.width=`${total?Math.max(0,Math.min(100,count/total*100)):0}%`;
+      track.append(fill);
+      const value=document.createElement('span'); value.textContent=`${count}件`;
+      row.append(name,track,value); root.append(row);
+    }
+  }
+  async function isAdmin(user) {
+    if (!user) return false;
+    const {data,error}=await db.from('admin_users').select('user_id').eq('user_id',user.id).maybeSingle();
+    if(error) throw new Error('管理者権限を確認できません。RLS設定を確認してください。');
+    return !!data;
+  }
+  async function loadStats() {
+    if (loading || !activeUser) return;
+    loading=true; $('refresh').disabled=true; text('status','読み込み中…');
+    try {
+      // Fetch all completed sessions in pages so the dashboard is not capped at 1000 rows.
+      const all=[]; const pageSize=500; let offset=0;
+      for (;;) {
+        const {data,error}=await db.from('game_sessions')
+          .select('id,cpu_difficulty,winner,completed,match_count,started_at,finished_at')
+          .eq('completed',true).order('finished_at',{ascending:false})
+          .range(offset,offset+pageSize-1);
+        if(error) throw error;
+        all.push(...(data||[]));
+        if(!data || data.length<pageSize) break;
+        offset+=pageSize;
+        if(offset>=100000) throw new Error('データが多いため、集計件数の上限に達しました。');
+      }
+      const total=all.length;
+      const human=all.filter(x=>x.winner==='human').length;
+      const cpu=all.filter(x=>x.winner==='cpu').length;
+      const draw=all.filter(x=>x.winner==='draw').length;
+      const validDurations=all.map(x=>Date.parse(x.finished_at)-Date.parse(x.started_at))
+        .filter(x=>Number.isFinite(x)&&x>=0&&x<=21600000);
+      const avgMs=validDurations.length?validDurations.reduce((a,b)=>a+b,0)/validDurations.length:NaN;
+      const matchValues=all.map(x=>Number(x.match_count)).filter(Number.isFinite);
+      text('total',total);
+      text('winRate',percentage(human,total));
+      text('duration',minutes(avgMs));
+      text('matches',matchValues.length?(matchValues.reduce((a,b)=>a+b,0)/matchValues.length).toFixed(1):'—');
+      const weak=all.filter(x=>x.cpu_difficulty==='weak');
+      const strong=all.filter(x=>x.cpu_difficulty==='strong');
+      const diff=$('difficulty'); diff.replaceChildren();
+      for (const [label,rows] of [['弱いCPU',weak],['強いCPU',strong]]) {
+        const p=document.createElement('p');
+        p.textContent=`${label}：${rows.length}ゲーム／プレイヤー勝率 ${percentage(rows.filter(x=>x.winner==='human').length,rows.length)}`;
+        diff.append(p);
+      }
+      bars('winners',[{label:'プレイヤー',count:human,total},{label:'CPU',count:cpu,total},{label:'引き分け',count:draw,total}]);
+      const body=$('recent'); body.replaceChildren();
+      for (const x of all.slice(0,20)) {
+        const tr=document.createElement('tr');
+        const duration=Date.parse(x.finished_at)-Date.parse(x.started_at);
+        const values=[fmtDate(x.finished_at),x.cpu_difficulty==='weak'?'弱い':'強い',
+          x.winner==='human'?'プレイヤー':x.winner==='cpu'?'CPU':'引き分け',
+          x.match_count,minutes(duration)];
+        for(const value of values){const td=document.createElement('td');td.textContent=String(value);tr.append(td);}
+        body.append(tr);
+      }
+      text('updated',`更新日時：${new Date().toLocaleString('ja-JP')}`);
+      text('status',total===0?'まだ完了ゲームのデータがありません。':'');
+    } catch(err) {
+      console.error('Statistics load failed',err);
+      text('status','統計を読み込めませんでした。管理者権限とRLSポリシーを確認してください。');
+    } finally { loading=false;$('refresh').disabled=false; }
+  }
+  async function updateView() {
+    const {data:{user},error}=await db.auth.getUser();
+    if(error || !user){activeUser=null;show('login',true);show('dashboard',false);show('logout',false);return;}
+    try {
+      if(!await isAdmin(user)){
+        await db.auth.signOut();activeUser=null;
+        show('login',true);show('dashboard',false);show('logout',false);
+        text('loginError','このアカウントには管理者権限がありません。');return;
+      }
+      activeUser=user;show('login',false);show('dashboard',true);show('logout',true);
+      await loadStats();
+    } catch(err) {
+      console.error(err);activeUser=null;show('login',true);show('dashboard',false);show('logout',true);
+      text('loginError',err.message||'管理者権限を確認できません。');
+    }
+  }
+  $('loginForm').addEventListener('submit',async(ev)=>{
+    ev.preventDefault();$('loginBtn').disabled=true;text('loginError','');
+    try {
+      const {error}=await db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});
+      if(error) throw error;
+      $('password').value='';await updateView();
+    } catch(err){text('loginError','ログインできませんでした。メールアドレス・パスワードを確認してください。');}
+    finally{$('loginBtn').disabled=false;}
+  });
+  $('logout').addEventListener('click',async()=>{await db.auth.signOut();activeUser=null;show('login',true);show('dashboard',false);show('logout',false);});
+  $('refresh').addEventListener('click',loadStats);
+  updateView();
+}
+</script>
+</body>
+</html>
